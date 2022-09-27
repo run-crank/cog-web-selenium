@@ -1,0 +1,110 @@
+import * as grpc from 'grpc';
+// import { Cluster } from 'puppeteer-cluster';
+import { CogServiceService as CogService } from '../proto/cog_grpc_pb';
+import { Cog } from './cog';
+import { ClientWrapper } from '../client/client-wrapper';
+// import puppeteerExtra from 'puppeteer-extra';
+// import puppeteerExtraPluginRecaptcha from 'puppeteer-extra-plugin-recaptcha';
+// const stealthPlugin = require('puppeteer-extra-plugin-stealth'); // needs to use require
+const { DefaultAzureCredential } = require('@azure/identity');
+const { BlobServiceClient } = require('@azure/storage-blob');
+
+const server = new grpc.Server();
+const port = process.env.PORT || 28866;
+const host = process.env.HOST || '0.0.0.0';
+const azureTenantId = process.env.AZURE_TENANT_ID || null;
+const azureClientId = process.env.AZURE_CLIENT_ID || null;
+const azureClientSecret = process.env.AZURE_CLIENT_SECRET || null;
+const azureStorageAccount = process.env.AZURE_BLOB_STORAGE_ACCOUNT || null;
+const azureContainerName = process.env.AZURE_BLOB_STORAGE_CONTAINER || null;
+let blobContainerClient;
+let credentials: grpc.ServerCredentials;
+
+if (process.env.USE_SSL) {
+  credentials = grpc.ServerCredentials.createSsl(
+    Buffer.from(process.env.SSL_ROOT_CRT, 'base64'), [{
+      cert_chain: Buffer.from(process.env.SSL_CRT, 'base64'),
+      private_key: Buffer.from(process.env.SSL_KEY, 'base64'),
+    }],
+    true,
+  );
+} else {
+  credentials = grpc.ServerCredentials.createInsecure();
+}
+
+if (azureTenantId && azureClientId && azureClientSecret && azureStorageAccount && azureContainerName) {
+  const defaultAzureCredential = new DefaultAzureCredential();
+
+  const blobServiceClient = new BlobServiceClient(
+    `https://${azureStorageAccount}.blob.core.windows.net`,
+    defaultAzureCredential,
+  );
+
+  blobContainerClient = blobServiceClient.getContainerClient(azureContainerName);
+}
+
+// async function instantiateCluster(): Promise<Cluster> {
+
+//   // add stealth and recaptcha plugins
+//   puppeteerExtra.use(stealthPlugin());
+//   if (process.env.CAPTCHA_TOKEN) {
+//     puppeteerExtra.use(
+//       puppeteerExtraPluginRecaptcha({
+//         provider: {
+//           id: '2captcha',
+//           token: process.env.CAPTCHA_TOKEN,
+//         },
+//         solveInactiveChallenges: true,
+//       }),
+//     );
+//   }
+
+//   return await Cluster.launch({
+//     puppeteer: puppeteerExtra, // Use the puppeteer-extra instance that has plugins
+//     concurrency: Cluster.CONCURRENCY_CONTEXT,
+//     maxConcurrency: process.env.hasOwnProperty('CLUSTER_MAX_CONCURRENCY') ? Number(process.env.CLUSTER_MAX_CONCURRENCY) : 4,
+//     retryLimit: process.env.hasOwnProperty('CLUSTER_RETRY_LIMIT') ? Number(process.env.CLUSTER_RETRY_LIMIT) : 3,
+//     retryDelay: process.env.hasOwnProperty('CLUSTER_RETRY_DELAY_MS') ? Number(process.env.CLUSTER_RETRY_DELAY_MS) : 3000,
+//     timeout: process.env.hasOwnProperty('CLUSTER_TIMEOUT_MS') ? Number(process.env.CLUSTER_TIMEOUT_MS) : 900000,
+//     puppeteerOptions: {
+//       headless: false,
+//       args: process.env.IN_DOCKER ? [
+//         '--no-sandbox',
+//         '--disable-setuid-sandbox',
+//         '--disable-dev-shm-usage',
+//         '--disable-features=IsolateOrigins,site-per-process',
+//         '--flag-switches-begin --disable-site-isolation-trials --flag-switches-end',
+//       ] : [
+//         '--disable-features=IsolateOrigins,site-per-process',
+//         '--flag-switches-begin --disable-site-isolation-trials --flag-switches-end',
+//       ],
+//     },
+//   });
+// }
+
+// instantiateCluster().then((cluster) => {
+//   server.addService(CogService, new Cog(cluster, ClientWrapper, {}, blobContainerClient));
+//   server.bind(`${host}:${port}`, credentials);
+//   server.start();
+//   console.log(`Server started, listening: ${host}:${port}`);
+
+//   process.on('SIGINT', () => {
+//     cluster.close();
+//   });
+// });
+
+// Special handler for when Puppeteer Cluster is in an unrecoverable state.
+// @see https://github.com/thomasdondorf/puppeteer-cluster/issues/207
+process.on('unhandledRejection', (up) => {
+  if (up.toString().includes('Unable to restart chrome')) {
+    throw up;
+  }
+});
+
+server.addService(CogService, new Cog(ClientWrapper, {}, blobContainerClient));
+  server.bind(`${host}:${port}`, credentials);
+  server.start();
+  console.log(`Server started, listening: ${host}:${port}`);
+
+// Export server for testing.
+export default server;
