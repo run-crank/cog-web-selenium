@@ -78,6 +78,16 @@ jobs:
           name: Uninstall Cog
           command: crank cog:uninstall $IMAGE_NAME --force
 
+  run-test-scenarios:
+    executor: docker-user
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Load archived Docker image
+          command: docker load -i /tmp/workspace/image.tar
+
   publish-dev:
     executor: docker-publisher
     steps:
