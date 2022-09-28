@@ -1,42 +1,20 @@
-##
-# The following Circle CI configuration will do the following:
-#
-# - On every branch except master:
-#   - Runs npm run lint and npm test
-#   - Builds the Cog docker image and attempts to install/uninstall it
-# - On master branch commits:
-#   - Run the above lint/tests
-#   - Build the docker image, tag it with dev-v[N], and push the tag
-# - On every git tag beginning with `vX.Y.Z`:
-#   - Build the docker image
-#   - Tag the image `latest` and `X.Y.Z` and push both tags
-#
-# In order for Docker publishing to work, you will need to do the following:
-#
-# - Set up a Circle CI context called `docker-creds-to-publish-cogs`
-# - In this context, add `DOCKERHUB_USERNAME` and `DOCKERHUB_PASS` environment
-#   variables, using credentials that can push to `automatoninc/web-selenium`
-#
-# @see https://circleci.com/docs/2.0/contexts/
-##
-
 version: 2.1
 executors:
   docker-publisher:
     environment:
       IMAGE_NAME: automatoninc/web-selenium
     docker:
-      - image: circleci/buildpack-deps:stretch
+      - image: cimg/base:stable
   docker-user:
     environment:
       IMAGE_NAME: automatoninc/web-selenium
     machine:
-      image: circleci/classic:latest
+      image: ubuntu-2004:202201-02
 
 jobs:
   test:
     docker:
-      - image: circleci/node:12
+      - image: cimg/node:12.0
     steps:
       - checkout
       - restore_cache:
@@ -143,14 +121,14 @@ workflows:
           filters:
             branches:
               ignore:
-                - master
+                - main
             tags:
               ignore: /.*/
       - build:
           filters:
             branches:
               ignore:
-                - master
+                - main
             tags:
               ignore: /.*/
       - install-built-cog:
@@ -160,35 +138,27 @@ workflows:
           filters:
             branches:
               ignore:
-                - master
+                - main
             tags:
               ignore: /.*/
 
-  build-master:
+  build-main:
     jobs:
       - test:
           filters:
             branches:
-              only: master
+              only: main
       - build:
           filters:
             branches:
-              only: master
-      - install-built-cog:
-          requires:
-            - test
-            - build
-          filters:
-            branches:
-              only: master
+              only: main
       - publish-dev:
           context: docker-creds-to-publish-cogs
           requires:
             - test
-            - install-built-cog
           filters:
             branches:
-              only: master
+              only: main
 
   build-tags:
     jobs:
