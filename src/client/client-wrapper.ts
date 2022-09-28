@@ -13,11 +13,9 @@ class ClientWrapper {
   public blobContainerClient: any;
 
   constructor(client: any, auth: grpc.Metadata) {
-    console.log('constructing............');
     this.clientReady = new Promise(async (resolve, reject) => {
       try {
         this.client = await new Builder().forBrowser(Browser.FIREFOX).build();
-        console.log(this.client);
       } catch (e) {
         console.log(e);
       }
