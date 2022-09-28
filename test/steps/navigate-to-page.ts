@@ -10,6 +10,7 @@ describe('NavigateToPage', () => {
   const expect = chai.expect;
   beforeEach(() => {
   });
+  
   it('should return expected step metadata', () => {
     expect(true).to.equal(true);
   });
