@@ -4,8 +4,10 @@ import * as fs from 'fs';
 import { Field, StepInterface } from './base-step';
 
 import { ICogServiceServer } from '../proto/cog_grpc_pb';
-import { ManifestRequest, CogManifest, Step, RunStepRequest, RunStepResponse, FieldDefinition,
-  StepDefinition } from '../proto/cog_pb';
+import {
+  ManifestRequest, CogManifest, Step, RunStepRequest, RunStepResponse, FieldDefinition,
+  StepDefinition,
+} from '../proto/cog_pb';
 import { ClientWrapper } from '../client/client-wrapper';
 // import { Cluster } from 'puppeteer-cluster';
 // import { Page } from 'puppeteer';
@@ -14,26 +16,26 @@ export class Cog implements ICogServiceServer {
 
   private steps: StepInterface[];
 
-  constructor (private clientWrapperClass, private stepMap: any = {}, private blobContainerClient) {
+  constructor(private clientWrapperClass, private stepMap: any = {}, private blobContainerClient) {
     this.steps = [].concat(...Object.values(this.getSteps(`${__dirname}/../steps`, clientWrapperClass)));
   }
 
   private getSteps(dir: string, clientWrapperClass) {
     const steps = fs.readdirSync(dir, { withFileTypes: true })
-    .map((file: fs.Dirent) => {
-      if (file.isFile() && (file.name.endsWith('.ts') || file.name.endsWith('.js'))) {
-        const step = require(`${dir}/${file.name}`).Step;
-        const stepInstance: StepInterface = new step(clientWrapperClass);
-        this.stepMap[stepInstance.getId()] = step;
-        return stepInstance;
-      } if (file.isDirectory()) {
-        return this.getSteps(`${__dirname}/../steps/${file.name}`, clientWrapperClass);
-      }
-    });
+      .map((file: fs.Dirent) => {
+        if (file.isFile() && (file.name.endsWith('.ts') || file.name.endsWith('.js'))) {
+          const step = require(`${dir}/${file.name}`).Step;
+          const stepInstance: StepInterface = new step(clientWrapperClass);
+          this.stepMap[stepInstance.getId()] = step;
+          return stepInstance;
+        } if (file.isDirectory()) {
+          return this.getSteps(`${__dirname}/../steps/${file.name}`, clientWrapperClass);
+        }
+      });
 
     // Note: this filters out files that do not match the above (e.g. READMEs
     // or .js.map files in built folder, etc).
-    return steps.filter((s) => s !== undefined);
+    return steps.filter(s => s !== undefined);
   }
 
   getManifest(
@@ -73,11 +75,11 @@ export class Cog implements ICogServiceServer {
   }
 
   runSteps(call: grpc.ServerDuplexStream<RunStepRequest, RunStepResponse>) {
-    let processing = 0;
-    let clientEnded = false;
-    let client: any = null;
-    let idMap: any = null;
-    let clientCreated = false;
+    // let processing = 0;
+    // let clientEnded = false;
+    // let client: any = null;
+    // let idMap: any = null;
+    // let clientCreated = false;
 
     // this.cluster.queue(({ page }) => {
     //   return new Promise((resolve) => {

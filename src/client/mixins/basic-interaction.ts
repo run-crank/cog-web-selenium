@@ -3,6 +3,15 @@ import { keyCodes } from '../_shared/constants/key-codes.constant';
 
 export class BasicInteractionAware {
   // public client: Page;
+  public client: any;
+  public lighthouse: any;
+  public clientReady: Promise<boolean>;
+  public blobContainerClient: any;
+
+  public async test() {
+    await this.clientReady;
+    await this.client.get('http://www.google.com/ncr');
+  }
 
   // public async focusFrame(domQuerySelector: string) {
   //   if (domQuerySelector === 'main') {

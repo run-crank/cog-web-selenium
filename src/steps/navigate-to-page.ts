@@ -25,6 +25,7 @@ export class NavigateToPage extends BaseStep implements StepInterface {
   }];
 
   async executeStep(step: Step): Promise<RunStepResponse> {
+    await this.client.test();
     return this.pass('Successfully navigated to %s', [], []);
     // const stepData: any = step.getData().toJavaScript();
     // const url: string = stepData.webPageUrl;

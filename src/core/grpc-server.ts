@@ -102,9 +102,9 @@ process.on('unhandledRejection', (up) => {
 });
 
 server.addService(CogService, new Cog(ClientWrapper, {}, blobContainerClient));
-  server.bind(`${host}:${port}`, credentials);
-  server.start();
-  console.log(`Server started, listening: ${host}:${port}`);
+server.bind(`${host}:${port}`, credentials);
+server.start();
+console.log(`Server started, listening: ${host}:${port}`);
 
 // Export server for testing.
 export default server;

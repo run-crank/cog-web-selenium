@@ -1,7 +1,7 @@
 import * as grpc from 'grpc';
 import { BasicInteractionAware } from './mixins';
 import { Field } from '../core/base-step';
-import { Builder, Browser, By, Key, until} from 'selenium-webdriver';
+import { Builder, Browser, By, Key, until } from 'selenium-webdriver';
 
 class ClientWrapper {
 
@@ -12,13 +12,12 @@ class ClientWrapper {
   public clientReady: Promise<boolean>;
   public blobContainerClient: any;
 
-  constructor (client: any, auth: grpc.Metadata) {
+  constructor(client: any, auth: grpc.Metadata) {
     console.log('constructing............');
     this.clientReady = new Promise(async (resolve, reject) => {
       try {
         this.client = await new Builder().forBrowser(Browser.FIREFOX).build();
         console.log(this.client);
-        await this.client.get('http://www.google.com/ncr');
       } catch (e) {
         console.log(e);
       }
@@ -26,7 +25,7 @@ class ClientWrapper {
   }
 }
 
-interface ClientWrapper extends BasicInteractionAware {}
+interface ClientWrapper extends BasicInteractionAware { }
 
 applyMixins(ClientWrapper, [BasicInteractionAware]);
 
