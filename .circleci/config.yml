@@ -15,7 +15,7 @@
 #
 # - Set up a Circle CI context called `docker-creds-to-publish-cogs`
 # - In this context, add `DOCKERHUB_USERNAME` and `DOCKERHUB_PASS` environment
-#   variables, using credentials that can push to `automatoninc/browser-selenium`
+#   variables, using credentials that can push to `automatoninc/web-selenium`
 #
 # @see https://circleci.com/docs/2.0/contexts/
 ##
@@ -24,12 +24,12 @@ version: 2.1
 executors:
   docker-publisher:
     environment:
-      IMAGE_NAME: automatoninc/browser-selenium
+      IMAGE_NAME: automatoninc/web-selenium
     docker:
       - image: circleci/buildpack-deps:stretch
   docker-user:
     environment:
-      IMAGE_NAME: automatoninc/browser-selenium
+      IMAGE_NAME: automatoninc/web-selenium
     machine:
       image: circleci/classic:latest
 
