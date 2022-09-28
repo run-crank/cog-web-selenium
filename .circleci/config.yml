@@ -162,14 +162,21 @@ workflows:
           filters:
             branches:
               only: main
+      - run-test-scenarios:
+          context: web-cog-sandbox-env-credentials
+          requires:
+            - build
+          filters:
+            branches:
+              only: main
       - publish-dev:
           context: docker-creds-to-publish-cogs
           requires:
             - test
+            - run-test-scenarios
           filters:
             branches:
               only: main
-
   build-tags:
     jobs:
       - build:
