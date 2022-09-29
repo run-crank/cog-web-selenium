@@ -33,7 +33,7 @@ export class ClickOnElement extends BaseStep implements StepInterface {
       return this.pass('Successfully clicked element: %s', [selector], []);
     } catch (e) {
       return this.error(
-        'There was a problem clicking element %s: %s', [selector, e.toString(),], []);
+        'There was a problem clicking element %s: %s', [selector, e.toString()], []);
     }
   }
 
