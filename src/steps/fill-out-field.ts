@@ -42,7 +42,7 @@ export class EnterValueIntoField extends BaseStep implements StepInterface {
       await this.client.fillOutField(selector, value);
       return this.pass('Successfully filled out %s with %s', [selector, value], []);
     } catch (e) {
-      return this.error('There was a problem filling out %s with %s: %s', [selector, value, e.toString(),], []);
+      return this.error('There was a problem filling out %s with %s: %s', [selector, value, e.toString()], []);
     }
   }
 

@@ -81,7 +81,7 @@ export class Cog implements ICogServiceServer {
     let idMap: any = null;
     let browser = null;
     let clientCreated = false;
-    
+
     console.log('runSteps');
     call.on('data', async (runStepRequest: RunStepRequest) => { // tslint:disable-line
       console.log(processing);
@@ -90,7 +90,7 @@ export class Cog implements ICogServiceServer {
       processing = processing + 1;
 
       const step: Step = runStepRequest.getStep();
-      
+
       if (!clientCreated) {
         idMap = {
           requestId: runStepRequest.getRequestId(),
@@ -104,7 +104,6 @@ export class Cog implements ICogServiceServer {
         clientCreated = true;
       }
 
-      
       const response: RunStepResponse = await this.dispatchStep(step, browser, runStepRequest, call.metadata, client);
       call.write(response);
 
