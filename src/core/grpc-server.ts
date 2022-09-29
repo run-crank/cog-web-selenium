@@ -1,8 +1,9 @@
 import * as grpc from 'grpc';
-// import { Cluster } from 'puppeteer-cluster';
+// import { Cluster } from 'puppeteer-driver';
 import { CogServiceService as CogService } from '../proto/cog_grpc_pb';
 import { Cog } from './cog';
 import { ClientWrapper } from '../client/client-wrapper';
+import { ThenableWebDriver } from 'selenium-webdriver';
 // import puppeteerExtra from 'puppeteer-extra';
 // import puppeteerExtraPluginRecaptcha from 'puppeteer-extra-plugin-recaptcha';
 // const stealthPlugin = require('puppeteer-extra-plugin-stealth'); // needs to use require
@@ -43,68 +44,29 @@ if (azureTenantId && azureClientId && azureClientSecret && azureStorageAccount &
   blobContainerClient = blobServiceClient.getContainerClient(azureContainerName);
 }
 
-// async function instantiateCluster(): Promise<Cluster> {
+async function instantiateCluster(): Promise<ThenableWebDriver> {
+  const webdriver = require('selenium-webdriver');
+  return new webdriver.Builder().forBrowser('chrome').build();
+}
 
-//   // add stealth and recaptcha plugins
-//   puppeteerExtra.use(stealthPlugin());
-//   if (process.env.CAPTCHA_TOKEN) {
-//     puppeteerExtra.use(
-//       puppeteerExtraPluginRecaptcha({
-//         provider: {
-//           id: '2captcha',
-//           token: process.env.CAPTCHA_TOKEN,
-//         },
-//         solveInactiveChallenges: true,
-//       }),
-//     );
-//   }
+instantiateCluster().then((driver) => {
+  server.addService(CogService, new Cog(driver, ClientWrapper, {}));
+  server.bind(`${host}:${port}`, credentials);
+  server.start();
+  console.log(`Server started, listening: ${host}:${port}`);
 
-//   return await Cluster.launch({
-//     puppeteer: puppeteerExtra, // Use the puppeteer-extra instance that has plugins
-//     concurrency: Cluster.CONCURRENCY_CONTEXT,
-//     maxConcurrency: process.env.hasOwnProperty('CLUSTER_MAX_CONCURRENCY') ? Number(process.env.CLUSTER_MAX_CONCURRENCY) : 4,
-//     retryLimit: process.env.hasOwnProperty('CLUSTER_RETRY_LIMIT') ? Number(process.env.CLUSTER_RETRY_LIMIT) : 3,
-//     retryDelay: process.env.hasOwnProperty('CLUSTER_RETRY_DELAY_MS') ? Number(process.env.CLUSTER_RETRY_DELAY_MS) : 3000,
-//     timeout: process.env.hasOwnProperty('CLUSTER_TIMEOUT_MS') ? Number(process.env.CLUSTER_TIMEOUT_MS) : 900000,
-//     puppeteerOptions: {
-//       headless: false,
-//       args: process.env.IN_DOCKER ? [
-//         '--no-sandbox',
-//         '--disable-setuid-sandbox',
-//         '--disable-dev-shm-usage',
-//         '--disable-features=IsolateOrigins,site-per-process',
-//         '--flag-switches-begin --disable-site-isolation-trials --flag-switches-end',
-//       ] : [
-//         '--disable-features=IsolateOrigins,site-per-process',
-//         '--flag-switches-begin --disable-site-isolation-trials --flag-switches-end',
-//       ],
-//     },
-//   });
-// }
-
-// instantiateCluster().then((cluster) => {
-//   server.addService(CogService, new Cog(cluster, ClientWrapper, {}, blobContainerClient));
-//   server.bind(`${host}:${port}`, credentials);
-//   server.start();
-//   console.log(`Server started, listening: ${host}:${port}`);
-
-//   process.on('SIGINT', () => {
-//     cluster.close();
-//   });
-// });
+  process.on('SIGINT', () => {
+    driver.quit();
+  });
+});
 
 // Special handler for when Puppeteer Cluster is in an unrecoverable state.
-// @see https://github.com/thomasdondorf/puppeteer-cluster/issues/207
+// @see https://github.com/thomasdondorf/puppeteer-driver/issues/207
 process.on('unhandledRejection', (up) => {
   if (up.toString().includes('Unable to restart chrome')) {
     throw up;
   }
 });
-
-server.addService(CogService, new Cog(ClientWrapper, {}, blobContainerClient));
-server.bind(`${host}:${port}`, credentials);
-server.start();
-console.log(`Server started, listening: ${host}:${port}`);
 
 // Export server for testing.
 export default server;

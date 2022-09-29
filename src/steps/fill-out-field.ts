@@ -1,0 +1,71 @@
+import { BaseStep, ExpectedRecord, Field, StepInterface } from '../core/base-step';
+import { Step, RunStepResponse, FieldDefinition, StepDefinition, StepRecord, RecordDefinition } from '../proto/cog_pb';
+
+export class EnterValueIntoField extends BaseStep implements StepInterface {
+
+  protected stepName: string = 'Fill out a form field';
+  // tslint:disable-next-line:max-line-length
+  protected stepExpression: string = 'fill out (?<domQuerySelector>.+) with (?<value>.+)';
+  protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected expectedFields: Field[] = [{
+    field: 'domQuerySelector',
+    type: FieldDefinition.Type.STRING,
+    description: "Field's DOM Query Selector",
+  }, {
+    field: 'value',
+    type: FieldDefinition.Type.ANYSCALAR,
+    description: 'Field Value',
+  }];
+
+  protected expectedRecords: ExpectedRecord[] = [{
+    id: 'form',
+    type: RecordDefinition.Type.KEYVALUE,
+    fields: [{
+      field: 'selector',
+      type: FieldDefinition.Type.STRING,
+      description: 'Selector of the element',
+    }, {
+      field: 'input',
+      type: FieldDefinition.Type.STRING,
+      description: 'Value input on the Field',
+    }],
+    dynamicFields: true,
+  }];
+
+  async executeStep(step: Step): Promise<RunStepResponse> {
+    const stepData: any = step.getData().toJavaScript();
+    const selector: string = stepData.domQuerySelector;
+    const value: any = stepData.value;
+
+    // Determine how to fill out the field, and then try.
+    try {
+      await this.client.fillOutField(selector, value);
+      return this.pass('Successfully filled out %s with %s', [selector, value], []);
+    } catch (e) {
+      return this.error('There was a problem filling out %s with %s: %s', [selector, value, e.toString(),], []);
+    }
+  }
+
+  public createRecord(selector, input): StepRecord {
+    const obj = {
+      selector,
+      input,
+    };
+    const record = this.keyValue('form', 'Filled out Field', obj);
+
+    return record;
+  }
+
+  public createOrderedRecord(selector, input, stepOrder = 1): StepRecord {
+    const obj = {
+      selector,
+      input,
+    };
+    const record = this.keyValue(`form.${stepOrder}`, `Filled out Field from Step ${stepOrder}`, obj);
+
+    return record;
+  }
+
+}
+
+export { EnterValueIntoField as Step };
