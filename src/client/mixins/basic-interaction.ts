@@ -1,6 +1,6 @@
 import { Promise as Bluebird } from 'bluebird';
 import { keyCodes } from '../_shared/constants/key-codes.constant';
-
+const webdriver = require('selenium-webdriver');
 export class BasicInteractionAware {
   // public client: Page;
   public client: any;
@@ -8,9 +8,16 @@ export class BasicInteractionAware {
   public clientReady: Promise<boolean>;
   public blobContainerClient: any;
 
-  public async test() {
-    await this.clientReady;
-    await this.client.get('http://www.google.com/ncr');
+  public async navigateToUrl(url: string, browser: string = 'chrome') {
+    return await this.client.get(url);
+  }
+
+  public async fillOutField(selector: string, value: any) {
+    return await this.client.findElement(webdriver.By.css(selector)).sendKeys(value);
+  }
+
+  public async clickElement(selector: string) {
+    return await this.client.findElement(webdriver.By.css(selector)).click();
   }
 
   // public async focusFrame(domQuerySelector: string) {
