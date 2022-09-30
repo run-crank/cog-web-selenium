@@ -66,6 +66,7 @@
     "bluebird": "^3.5.5",
     "google-protobuf": "^3.8.0",
     "grpc": "^1.24.11",
+    "selenium-webdriver": "^4.5.0",
     "ts-node": "^8.3.0"
   }
 }
