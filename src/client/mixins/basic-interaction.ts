@@ -11,6 +11,7 @@ export class BasicInteractionAware {
   public async test() {
     await this.clientReady;
     await this.client.get('http://www.google.com/ncr');
+    console.log('test test');
   }
 
   // public async focusFrame(domQuerySelector: string) {
