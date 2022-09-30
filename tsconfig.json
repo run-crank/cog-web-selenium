@@ -12,7 +12,7 @@
   },
   "include": [
     "src/**/*"
-, "selenium_test.js", "test"  ],
+  ],
   "exclude": [
     "node_modules"
   ]
