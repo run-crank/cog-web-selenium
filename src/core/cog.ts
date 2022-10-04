@@ -139,6 +139,7 @@ export class Cog implements ICogServiceServer {
       browser = await new Builder().forBrowser(browserName).build();
     }
     const response: RunStepResponse = await this.dispatchStep(step, browser, call.request, call.metadata);
+    browser.close();
     callback(null, response);
   }
 
