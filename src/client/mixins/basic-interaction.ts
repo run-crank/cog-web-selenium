@@ -1,6 +1,7 @@
 import { Promise as Bluebird } from 'bluebird';
 import { keyCodes } from '../_shared/constants/key-codes.constant';
-const webdriver = require('selenium-webdriver');
+import { WebDriver, By } from 'selenium-webdriver';
+
 export class BasicInteractionAware {
   // public client: Page;
   public client: any;
@@ -13,11 +14,11 @@ export class BasicInteractionAware {
   }
 
   public async fillOutField(selector: string, value: any) {
-    return await this.client.findElement(webdriver.By.css(selector)).sendKeys(value);
+    return await this.client.findElement(By.css(selector)).sendKeys(value);
   }
 
   public async clickElement(selector: string) {
-    return await this.client.findElement(webdriver.By.css(selector)).click();
+    return await this.client.findElement(By.css(selector)).click();
   }
 
   // public async focusFrame(domQuerySelector: string) {

@@ -9,7 +9,7 @@ import {
   StepDefinition,
 } from '../proto/cog_pb';
 import { ClientWrapper } from '../client/client-wrapper';
-import { ThenableWebDriver } from 'selenium-webdriver';
+import { ThenableWebDriver, Builder } from 'selenium-webdriver';
 
 export class Cog implements ICogServiceServer {
 
@@ -74,7 +74,6 @@ export class Cog implements ICogServiceServer {
   }
 
   runSteps(call: grpc.ServerDuplexStream<RunStepRequest, RunStepResponse>) {
-    const webdriver = require('selenium-webdriver');
     let processing = 0;
     let clientEnded = false;
     let client: any = null;
@@ -99,7 +98,7 @@ export class Cog implements ICogServiceServer {
         };
         const stepData: any = step.getData().toJavaScript();
         const browserName: string = stepData.browser;
-        browser = new webdriver.Builder().forBrowser(browserName).build();
+        browser = await new Builder().forBrowser(browserName).build();
         client = await this.getClientWrapper(browser, call.metadata, idMap);
         clientCreated = true;
       }
@@ -133,12 +132,11 @@ export class Cog implements ICogServiceServer {
   ) {
     let browser = null;
 
-    const webdriver = require('selenium-webdriver');
     const step: Step = call.request.getStep();
     const stepData: any = step.getData().toJavaScript();
     const browserName: string = stepData.browser;
     if (!browser && browserName) {
-      browser = new webdriver.Builder().forBrowser(browserName).build();
+      browser = await new Builder().forBrowser(browserName).build();
     }
     const response: RunStepResponse = await this.dispatchStep(step, browser, call.request, call.metadata);
     callback(null, response);
