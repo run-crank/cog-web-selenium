@@ -3,15 +3,13 @@ import * as grpc from 'grpc';
 import { CogServiceService as CogService } from '../proto/cog_grpc_pb';
 import { Cog } from './cog';
 import { ClientWrapper } from '../client/client-wrapper';
-import { ThenableWebDriver } from 'selenium-webdriver';
-import { Builder } from 'selenium-webdriver';
+import { ThenableWebDriver, Builder } from 'selenium-webdriver';
 
 // import puppeteerExtra from 'puppeteer-extra';
 // import puppeteerExtraPluginRecaptcha from 'puppeteer-extra-plugin-recaptcha';
 // const stealthPlugin = require('puppeteer-extra-plugin-stealth'); // needs to use require
 const { DefaultAzureCredential } = require('@azure/identity');
 const { BlobServiceClient } = require('@azure/storage-blob');
-
 
 const server = new grpc.Server();
 const port = process.env.PORT || 28866;
@@ -50,7 +48,7 @@ if (azureTenantId && azureClientId && azureClientSecret && azureStorageAccount &
 async function instantiateCluster(): Promise<ThenableWebDriver> {
   try {
     const builder = await new Builder().forBrowser('chrome').build();
-    return builder
+    return builder;
   } catch (e) {
     console.log(`Error intializing Cluster: ${e}`);
   }
