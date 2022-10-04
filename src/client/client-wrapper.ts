@@ -1,25 +1,19 @@
 import * as grpc from 'grpc';
 import { BasicInteractionAware } from './mixins';
 import { Field } from '../core/base-step';
-import { Builder, Browser, By, Key, until } from 'selenium-webdriver';
+import { Builder, Browser, By, Key, until, ThenableWebDriver } from 'selenium-webdriver';
 
 class ClientWrapper {
 
   public static expectedAuthFields: Field[] = [];
 
-  public client: Browser;
+  public client: ThenableWebDriver;
   public lighthouse: any;
   public clientReady: Promise<boolean>;
   public blobContainerClient: any;
 
   constructor(client: any, auth: grpc.Metadata) {
-    this.clientReady = new Promise(async (resolve, reject) => {
-      try {
-        this.client = await new Builder().forBrowser(Browser.FIREFOX).build();
-      } catch (e) {
-        console.log(e);
-      }
-    });
+    this.client = client;
   }
 }
 

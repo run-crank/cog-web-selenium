@@ -9,14 +9,13 @@ import {
   StepDefinition,
 } from '../proto/cog_pb';
 import { ClientWrapper } from '../client/client-wrapper';
-// import { Cluster } from 'puppeteer-cluster';
-// import { Page } from 'puppeteer';
+import { ThenableWebDriver, Builder } from 'selenium-webdriver';
 
 export class Cog implements ICogServiceServer {
 
   private steps: StepInterface[];
 
-  constructor(private clientWrapperClass, private stepMap: any = {}, private blobContainerClient) {
+  constructor(private driver: ThenableWebDriver, private clientWrapperClass, private stepMap: any = {}) {
     this.steps = [].concat(...Object.values(this.getSteps(`${__dirname}/../steps`, clientWrapperClass)));
   }
 
@@ -75,71 +74,77 @@ export class Cog implements ICogServiceServer {
   }
 
   runSteps(call: grpc.ServerDuplexStream<RunStepRequest, RunStepResponse>) {
-    // let processing = 0;
-    // let clientEnded = false;
-    // let client: any = null;
-    // let idMap: any = null;
-    // let clientCreated = false;
+    let processing = 0;
+    let clientEnded = false;
+    let client: any = null;
+    let idMap: any = null;
+    let browser = null;
+    let clientCreated = false;
 
-    // this.cluster.queue(({ page }) => {
-    //   return new Promise((resolve) => {
-    //     call.on('data', async (runStepRequest: RunStepRequest) => { // tslint:disable-line
-    //       processing = processing + 1;
+    console.log('runSteps');
+    call.on('data', async (runStepRequest: RunStepRequest) => { // tslint:disable-line
+      console.log(processing);
+      console.log(clientEnded);
+      console.log(!!browser);
+      processing = processing + 1;
 
-    //       if (!clientCreated) {
-    //         idMap = {
-    //           requestId: runStepRequest.getRequestId(),
-    //           scenarioId: runStepRequest.getScenarioId(),
-    //           requestorId: runStepRequest.getRequestorId(),
-    //         };
-    //         client = await this.getClientWrapper(page, call.metadata, idMap, this.blobContainerClient);
-    //         clientCreated = true;
-    //       }
+      const step: Step = runStepRequest.getStep();
 
-    //       const step: Step = runStepRequest.getStep();
-    //       const response: RunStepResponse = await this.dispatchStep(step, page, runStepRequest, call.metadata, client);
-    //       call.write(response);
+      if (!clientCreated) {
+        idMap = {
+          requestId: runStepRequest.getRequestId(),
+          scenarioId: runStepRequest.getScenarioId(),
+          requestorId: runStepRequest.getRequestorId(),
+        };
+        const stepData: any = step.getData().toJavaScript();
+        const browserName: string = stepData.browser;
+        browser = await new Builder().forBrowser(browserName).build();
+        client = await this.getClientWrapper(browser, call.metadata, idMap);
+        clientCreated = true;
+      }
 
-    //       processing = processing - 1;
+      const response: RunStepResponse = await this.dispatchStep(step, browser, runStepRequest, call.metadata, client);
+      call.write(response);
 
-    //       // If this was the last step to process and the client has ended the stream, then end our
-    //       // stream as well.
-    //       if (processing === 0 && clientEnded) {
-    //         resolve(null);
-    //         call.end();
-    //       }
-    //     });
+      processing = processing - 1;
 
-    //     call.on('end', () => {
-    //       clientEnded = true;
+      // If this was the last step to process and the client has ended the stream, then end our
+      // stream as well.
+      if (processing === 0 && clientEnded) {
+        call.end();
+      }
+    });
 
-    //       // Only end the stream if we are done processing all steps.
-    //       if (processing === 0) {
-    //         resolve(null);
-    //         call.end();
-    //       }
-    //     });
-    //   });
-    // });
+    call.on('end', () => {
+      clientEnded = true;
+      console.log('ENDING');
+      // Only end the stream if we are done processing all steps.
+      if (processing === 0) {
+        browser.close();
+        call.end();
+      }
+    });
   }
 
   async runStep(
     call: grpc.ServerUnaryCall<RunStepRequest>,
     callback: grpc.sendUnaryData<RunStepResponse>,
   ) {
+    let browser = null;
+
     const step: Step = call.request.getStep();
-    // this.cluster.queue(({ page }) => {
-    //   return new Promise(async (resolve, reject) => {
-    //     const response: RunStepResponse = await this.dispatchStep(step, page, call.request, call.metadata);
-    //     callback(null, response);
-    //     resolve(null);
-    //   });
-    // });
+    const stepData: any = step.getData().toJavaScript();
+    const browserName: string = stepData.browser;
+    if (!browser && browserName) {
+      browser = await new Builder().forBrowser(browserName).build();
+    }
+    const response: RunStepResponse = await this.dispatchStep(step, browser, call.request, call.metadata);
+    callback(null, response);
   }
 
   private async dispatchStep(
     step: Step,
-    page: any,
+    driver: ThenableWebDriver,
     runStepRequest: RunStepRequest,
     metadata: grpc.Metadata,
     client = null,
@@ -152,7 +157,7 @@ export class Cog implements ICogServiceServer {
         scenarioId: runStepRequest.getScenarioId(),
         requestorId: runStepRequest.getRequestorId(),
       };
-      wrapper = this.getClientWrapper(page, metadata, idMap, this.blobContainerClient);
+      wrapper = this.getClientWrapper(driver, metadata, idMap);
     }
 
     const stepId = step.getStepId();
@@ -176,8 +181,8 @@ export class Cog implements ICogServiceServer {
     return response;
   }
 
-  private getClientWrapper(page: any, auth: grpc.Metadata, idMap: {} = null, blobContainerClient: any) {
-    return new this.clientWrapperClass(page, auth, idMap, blobContainerClient);
+  private getClientWrapper(driver: ThenableWebDriver, auth: grpc.Metadata, idMap: {} = null) {
+    return new this.clientWrapperClass(driver, auth, idMap);
   }
 
 }
