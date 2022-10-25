@@ -5,7 +5,7 @@ import { Cog } from './cog';
 import { ClientWrapper } from '../client/client-wrapper';
 import { ThenableWebDriver, Builder } from 'selenium-webdriver';
 import * as chrome from 'selenium-webdriver/chrome';
-require('chromedriver');
+import 'chromedriver';
 
 // import puppeteerExtra from 'puppeteer-extra';
 // import puppeteerExtraPluginRecaptcha from 'puppeteer-extra-plugin-recaptcha';
