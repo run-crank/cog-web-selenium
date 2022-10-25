@@ -4,6 +4,8 @@ import { CogServiceService as CogService } from '../proto/cog_grpc_pb';
 import { Cog } from './cog';
 import { ClientWrapper } from '../client/client-wrapper';
 import { ThenableWebDriver, Builder } from 'selenium-webdriver';
+import * as chrome from 'selenium-webdriver/chrome';
+require('chromedriver');
 
 // import puppeteerExtra from 'puppeteer-extra';
 // import puppeteerExtraPluginRecaptcha from 'puppeteer-extra-plugin-recaptcha';
@@ -47,10 +49,15 @@ if (azureTenantId && azureClientId && azureClientSecret && azureStorageAccount &
 
 async function instantiateCluster(): Promise<ThenableWebDriver> {
   try {
-    const builder = await new Builder().forBrowser('chrome').build();
+    // This is a way to remove some of the unnecessary Selenium Chrome logs.
+    // See: https://stackoverflow.com/questions/64927909/failed-to-read-descriptor-from-node-connection-a-device-attached-to-the-system
+    const chromeOptions = new chrome.Options()
+    chromeOptions.excludeSwitches("enable-logging")
+
+    const builder = await new Builder().forBrowser('chrome').setChromeOptions(chromeOptions).build();
     return builder;
   } catch (e) {
-    console.log(`Error intializing Cluster: ${e}`);
+    console.log(`Error initializing Cluster: ${e}`);
   }
 }
 
