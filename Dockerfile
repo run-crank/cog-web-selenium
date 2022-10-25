@@ -1,30 +1,20 @@
-FROM ubuntu:18.04
-
-#update environment
-RUN apt-get -y upgrade
-RUN apt-get -y update
-RUN apt-get -y --with-new-pkgs upgrade
-RUN apt-get -y autoremove
-
-#install chrome
-RUN apt-get -y install lsb-release libappindicator3-1
-RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-RUN dpkg -i google-chrome-stable_current_amd64.deb || true
-RUN apt-get -fy install
-
-#install curl
-RUN apt-get -y install curl wget
-
-#install node
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
-RUN apt-get -y install nodejs
-RUN node --version
-RUN npm --version
-
-#install pm2
-RUN npm install pm2 -g --production
-
 FROM mhart/alpine-node:12 AS build
+
+# Install latest stable Chrome
+# https://gerg.dev/2021/06/making-chromedriver-and-chrome-versions-match-in-a-docker-image/
+RUN echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | \
+    tee -a /etc/apt/sources.list.d/google.list && \
+    wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | \
+    apt-key add - && \
+    apt-get update && \
+    apt-get install -y google-chrome-stable libxss1
+
+# Install the Chromedriver version that corresponds to the installed major Chrome version
+# https://blogs.sap.com/2020/12/01/ui5-testing-how-to-handle-chromedriver-update-in-docker-image/
+RUN google-chrome --version | grep -oE "[0-9]{1,10}.[0-9]{1,10}.[0-9]{1,10}" > /tmp/chromebrowser-main-version.txt
+RUN wget --no-verbose -O /tmp/latest_chromedriver_version.txt https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$(cat /tmp/chromebrowser-main-version.txt)
+RUN wget --no-verbose -O /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/$(cat /tmp/latest_chromedriver_version.txt)/chromedriver_linux64.zip && rm -rf /opt/selenium/chromedriver && unzip /tmp/chromedriver_linux64.zip -d /opt/selenium && rm /tmp/chromedriver_linux64.zip && mv /opt/selenium/chromedriver /opt/selenium/chromedriver-$(cat /tmp/latest_chromedriver_version.txt) && chmod 755 /opt/selenium/chromedriver-$(cat /tmp/latest_chromedriver_version.txt) && ln -fs /opt/selenium/chromedriver-$(cat /tmp/latest_chromedriver_version.txt) /usr/bin/chromedriver
+
 WORKDIR /app
 COPY package.json package-lock.json tsconfig.json ./
 COPY src ./src
