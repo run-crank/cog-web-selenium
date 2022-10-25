@@ -55,6 +55,7 @@ async function instantiateCluster(): Promise<ThenableWebDriver> {
     // See: https://stackoverflow.com/questions/64927909/failed-to-read-descriptor-from-node-connection-a-device-attached-to-the-system
     const chromeOptions = new chrome.Options();
     chromeOptions.excludeSwitches('enable-logging');
+    chromeOptions.addArguments('no-sandbox');
 
     const builder = await new Builder().forBrowser('chrome').setChromeOptions(chromeOptions).build();
     return builder;
