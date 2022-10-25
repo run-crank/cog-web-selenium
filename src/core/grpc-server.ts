@@ -51,8 +51,8 @@ async function instantiateCluster(): Promise<ThenableWebDriver> {
   try {
     // This is a way to remove some of the unnecessary Selenium Chrome logs.
     // See: https://stackoverflow.com/questions/64927909/failed-to-read-descriptor-from-node-connection-a-device-attached-to-the-system
-    const chromeOptions = new chrome.Options()
-    chromeOptions.excludeSwitches("enable-logging")
+    const chromeOptions = new chrome.Options();
+    chromeOptions.excludeSwitches('enable-logging');
 
     const builder = await new Builder().forBrowser('chrome').setChromeOptions(chromeOptions).build();
     return builder;
