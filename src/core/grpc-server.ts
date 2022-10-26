@@ -4,6 +4,7 @@ import { CogServiceService as CogService } from '../proto/cog_grpc_pb';
 import { Cog } from './cog';
 import { ClientWrapper } from '../client/client-wrapper';
 import { ThenableWebDriver, Builder } from 'selenium-webdriver';
+import * as chrome from 'selenium-webdriver/chrome';
 
 // import puppeteerExtra from 'puppeteer-extra';
 // import puppeteerExtraPluginRecaptcha from 'puppeteer-extra-plugin-recaptcha';
@@ -46,11 +47,17 @@ if (azureTenantId && azureClientId && azureClientSecret && azureStorageAccount &
 }
 
 async function instantiateCluster(): Promise<ThenableWebDriver> {
+  let driver;
   try {
-    const builder = await new Builder().forBrowser('chrome').build();
-    return builder;
+    const builder = new Builder().forBrowser('chrome');
+    const options = new chrome.Options();
+    // options.headless();                        // run headless Chrome
+    options.excludeSwitches('enable-logging');    // disable 'DevTools listening on...'
+    options.addArguments('--no-sandbox');         // not an advised flag but eliminates "DevToolsActivePort file doesn't exist" error.
+    driver = await builder.setChromeOptions(options).build();
+    return driver;
   } catch (e) {
-    console.log(`Error intializing Cluster: ${e}`);
+    console.log(`Error initializing Cluster: ${e}`);
   }
 }
 
