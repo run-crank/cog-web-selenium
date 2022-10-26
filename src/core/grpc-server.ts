@@ -5,7 +5,6 @@ import { Cog } from './cog';
 import { ClientWrapper } from '../client/client-wrapper';
 import { ThenableWebDriver, Builder } from 'selenium-webdriver';
 import * as chrome from 'selenium-webdriver/chrome';
-import * as chromedriver from 'chromedriver';
 
 // import puppeteerExtra from 'puppeteer-extra';
 // import puppeteerExtraPluginRecaptcha from 'puppeteer-extra-plugin-recaptcha';
@@ -48,17 +47,15 @@ if (azureTenantId && azureClientId && azureClientSecret && azureStorageAccount &
 }
 
 async function instantiateCluster(): Promise<ThenableWebDriver> {
+  let driver;
   try {
-    chromedriver.start([]);
-
-    // This is a way to remove some of the unnecessary Selenium Chrome logs.
-    // See: https://stackoverflow.com/questions/64927909/failed-to-read-descriptor-from-node-connection-a-device-attached-to-the-system
-    const chromeOptions = new chrome.Options();
-    chromeOptions.excludeSwitches('enable-logging');
-    chromeOptions.addArguments('no-sandbox');
-
-    const builder = await new Builder().forBrowser('chrome').setChromeOptions(chromeOptions).build();
-    return builder;
+    const builder = new Builder().forBrowser('chrome');
+    const options = new chrome.Options();
+    // options.headless();                        // run headless Chrome
+    options.excludeSwitches('enable-logging');    // disable 'DevTools listening on...'
+    options.addArguments('--no-sandbox');         // not an advised flag but eliminates "DevToolsActivePort file doesn't exist" error.
+    driver = await builder.setChromeOptions(options).build();
+    return driver;
   } catch (e) {
     console.log(`Error initializing Cluster: ${e}`);
   }
