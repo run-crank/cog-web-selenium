@@ -37,4 +37,4 @@ RUN npm install \
 
 EXPOSE 28866
 LABEL com.automatoninc.cog-for="Browser Selenium"
-ENTRYPOINT ["/usr/local/bin/dumb-init", "--", "xvfb-run", "--server-num=99", "--server-args=-screen 0 1280x960x24", "node", "build/core/grpc-server.js"]
+ENTRYPOINT ["/usr/local/bin/dumb-init", "--", "xvfb-run", "--auto-servernum", "--server-num=1", "--server-args=-screen 0 1280x960x24", "node", "build/core/grpc-server.js"]
