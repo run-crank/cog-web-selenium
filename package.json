@@ -15,6 +15,7 @@
     "build-ts": "tsc",
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "start": "check-engine package.json && ts-node src/core/grpc-server.ts",
+    "start-local-docker": "docker run -d -p 4444:4444 --shm-size=2g selenium/standalone-chrome && docker run -d -p 4445:4444 --shm-size=2g selenium/standalone-firefox && docker run -d -p 4446:4444 --shm-size=2g selenium/standalone-edge",
     "test": "nyc mocha -r ts-node/register test/*.ts test/**/*.ts test/**/**/*.ts",
     "version": "crank cog:readme automatoninc/web-selenium && git add README.md"
   },

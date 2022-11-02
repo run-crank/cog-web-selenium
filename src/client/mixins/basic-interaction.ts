@@ -1,6 +1,6 @@
 import { Promise as Bluebird } from 'bluebird';
 import { keyCodes } from '../_shared/constants/key-codes.constant';
-import { WebDriver, By } from 'selenium-webdriver';
+import { WebDriver, By, until } from 'selenium-webdriver';
 
 export class BasicInteractionAware {
   // public client: Page;
@@ -10,14 +10,22 @@ export class BasicInteractionAware {
   public blobContainerClient: any;
 
   public async navigateToUrl(url: string, browser: string = 'chrome') {
-    return await this.client.get(url);
+    console.log('>>>>> inside navigateToUrl basic interaction');
+    console.timeLog('time');
+    const response = await this.client.get(url);
+    console.log('response', response);
+    console.log('>>>>> checkpoint: finished navigating to page or timed out');
+    console.timeLog('time');
+    return;
   }
 
   public async fillOutField(selector: string, value: any) {
+    await this.client.wait(until.elementLocated(By.css(selector)), 10000);
     return await this.client.findElement(By.css(selector)).sendKeys(value);
   }
 
   public async clickElement(selector: string) {
+    await this.client.wait(until.elementLocated(By.css(selector)), 10000);
     return await this.client.findElement(By.css(selector)).click();
   }
 

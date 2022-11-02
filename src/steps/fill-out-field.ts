@@ -1,11 +1,11 @@
 import { BaseStep, ExpectedRecord, Field, StepInterface } from '../core/base-step';
 import { Step, RunStepResponse, FieldDefinition, StepDefinition, StepRecord, RecordDefinition } from '../proto/cog_pb';
 
-export class EnterValueIntoField extends BaseStep implements StepInterface {
+export class SeleniumEnterValueIntoField extends BaseStep implements StepInterface {
 
   protected stepName: string = 'Fill out a form field';
   // tslint:disable-next-line:max-line-length
-  protected stepExpression: string = 'fill out (?<domQuerySelector>.+) with (?<value>.+)';
+  protected stepExpression: string = 'use selenium to fill out (?<domQuerySelector>.+) with (?<value>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
   protected expectedFields: Field[] = [{
     field: 'domQuerySelector',
@@ -68,4 +68,4 @@ export class EnterValueIntoField extends BaseStep implements StepInterface {
 
 }
 
-export { EnterValueIntoField as Step };
+export { SeleniumEnterValueIntoField as Step };

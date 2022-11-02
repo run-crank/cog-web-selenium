@@ -12,7 +12,7 @@ class ClientWrapper {
   public clientReady: Promise<boolean>;
   public blobContainerClient: any;
 
-  constructor(client: any, auth: grpc.Metadata) {
+  constructor(client: any, auth: grpc.Metadata, idMap) {
     this.client = client;
   }
 }

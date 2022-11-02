@@ -1,11 +1,11 @@
 import { BaseStep, ExpectedRecord, Field, StepInterface } from '../core/base-step';
 import { Step, RunStepResponse, FieldDefinition, StepDefinition, StepRecord, RecordDefinition } from '../proto/cog_pb';
 
-export class NavigateToPage extends BaseStep implements StepInterface {
+export class SeleniumNavigateToPage extends BaseStep implements StepInterface {
 
   protected stepName: string = 'Navigate to a webpage';
   // tslint:disable-next-line:max-line-length
-  protected stepExpression: string = 'navigate to (?<webPageUrl>.+)';
+  protected stepExpression: string = 'navigate using selenium (?<browser>.+) to (?<webPageUrl>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
   protected expectedFields: Field[] = [{
     field: 'browser',
@@ -29,11 +29,16 @@ export class NavigateToPage extends BaseStep implements StepInterface {
   }];
 
   async executeStep(step: Step): Promise<RunStepResponse> {
+    console.log('>>>>> INSIDE NAVIGATE-TO-PAGE STEP');
     const stepData: any = step.getData().toJavaScript();
     const browser: string = stepData.browser;
     const url: string = stepData.webPageUrl;
     try {
+      console.time('time');
+      console.log('>>>>> STARTED TIMER FOR NAVIGATE-TO-PAGE STEP');
       await this.client.navigateToUrl(url, browser);
+      console.log('>>>>> checkpoint: finished navigating, ending timer');
+      console.timeEnd('time');
       return this.pass('Successfully navigated to %s', [url], []);
     } catch (e) {
       console.log(e);
@@ -61,4 +66,4 @@ export class NavigateToPage extends BaseStep implements StepInterface {
 
 }
 
-export { NavigateToPage as Step };
+export { SeleniumNavigateToPage as Step };
