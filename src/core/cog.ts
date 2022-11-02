@@ -15,7 +15,7 @@ export class Cog implements ICogServiceServer {
 
   private steps: StepInterface[];
 
-  constructor(private driver: ThenableWebDriver, private clientWrapperClass, private stepMap: any = {}) {
+  constructor(private clientWrapperClass, private stepMap: any = {}, private blobContainerClient, private browserMap) {
     this.steps = [].concat(...Object.values(this.getSteps(`${__dirname}/../steps`, clientWrapperClass)));
   }
 
@@ -81,11 +81,7 @@ export class Cog implements ICogServiceServer {
     let browser = null;
     let clientCreated = false;
 
-    console.log('runSteps');
     call.on('data', async (runStepRequest: RunStepRequest) => { // tslint:disable-line
-      console.log(processing);
-      console.log(clientEnded);
-      console.log(!!browser);
       processing = processing + 1;
 
       const step: Step = runStepRequest.getStep();
@@ -97,8 +93,22 @@ export class Cog implements ICogServiceServer {
           requestorId: runStepRequest.getRequestorId(),
         };
         const stepData: any = step.getData().toJavaScript();
+        // Throw an error if the browser name is undefined or unsupported.
+        if (!stepData.browser || !Object.keys(this.browserMap).includes(stepData.browser)) {
+          const errorResponse = new RunStepResponse();
+          errorResponse.setOutcome(RunStepResponse.Outcome.ERROR);
+          errorResponse.setMessageFormat('Unsupported browser %s');
+          errorResponse.addMessageArgs(Value.fromJavaScript(stepData.browser));
+          call.write(errorResponse);
+          call.end();
+        }
         const browserName: string = stepData.browser;
-        browser = await new Builder().forBrowser(browserName).build();
+        const caps = this.browserMap[browserName].caps;
+        browser = await new Builder()
+          .withCapabilities(caps)
+          .usingServer(`http://${this.browserMap[browserName].host}:${this.browserMap[browserName].port}`)
+          .build();
+        console.log(`>>>>> SESSION CREATED ON BROWSER: ${browserName}`);
         client = await this.getClientWrapper(browser, call.metadata, idMap);
         clientCreated = true;
       }
@@ -111,16 +121,28 @@ export class Cog implements ICogServiceServer {
       // If this was the last step to process and the client has ended the stream, then end our
       // stream as well.
       if (processing === 0 && clientEnded) {
+        // End the browser session if there is one.
+        try {
+          setTimeout(() => { browser.quit(); }, 100);
+          console.log('>>>>> BROWSER SESSION ENDED');
+        } catch (e) {
+          // Do nothing
+        }
         call.end();
       }
     });
 
-    call.on('end', () => {
+    call.on('end', async () => {
       clientEnded = true;
-      console.log('ENDING');
       // Only end the stream if we are done processing all steps.
       if (processing === 0) {
-        browser.close();
+        // End the browser session if there is one.
+        try {
+          setTimeout(() => { browser.quit(); }, 100);
+          console.log('>>>>> BROWSER SESSION ENDED');
+        } catch (e) {
+          // Do nothing
+        }
         call.end();
       }
     });
@@ -134,12 +156,28 @@ export class Cog implements ICogServiceServer {
 
     const step: Step = call.request.getStep();
     const stepData: any = step.getData().toJavaScript();
-    const browserName: string = stepData.browser;
-    if (!browser && browserName) {
-      browser = await new Builder().forBrowser(browserName).build();
+    if (!stepData.browser || !Object.keys(this.browserMap).includes(stepData.browser)) {
+      const errorResponse = new RunStepResponse();
+      errorResponse.setOutcome(RunStepResponse.Outcome.ERROR);
+      errorResponse.setMessageFormat('Unsupported browser %s');
+      errorResponse.addMessageArgs(Value.fromJavaScript(stepData.browser));
+      callback(null, errorResponse);
     }
+    const browserName: string = stepData.browser;
+    const caps = this.browserMap[browserName].caps;
+    browser = await new Builder()
+      .withCapabilities(caps)
+      .usingServer(`http://${this.browserMap[browserName].host}:${this.browserMap[browserName].port}`)
+      .build();
+    console.log(`>>>>> SESSION CREATED ON BROWSER: ${browserName}`);
     const response: RunStepResponse = await this.dispatchStep(step, browser, call.request, call.metadata);
-    browser.close();
+    // End the browser session if there is one.
+    try {
+      setTimeout(() => { browser.quit(); }, 100);
+      console.log('>>>>> BROWSER SESSION ENDED');
+    } catch (e) {
+      // Do nothing
+    }
     callback(null, response);
   }
 

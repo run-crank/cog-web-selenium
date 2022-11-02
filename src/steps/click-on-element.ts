@@ -1,11 +1,11 @@
 import { BaseStep, ExpectedRecord, Field, StepInterface } from '../core/base-step';
 import { Step, RunStepResponse, FieldDefinition, StepDefinition, StepRecord, RecordDefinition } from '../proto/cog_pb';
 
-export class ClickOnElement extends BaseStep implements StepInterface {
+export class SeleniumClickOnElement extends BaseStep implements StepInterface {
 
   protected stepName: string = 'Click an element on a page';
   // tslint:disable-next-line:max-line-length
-  protected stepExpression: string = 'click the page element (?<domQuerySelector>.+)';
+  protected stepExpression: string = 'use selenium to click the page element (?<domQuerySelector>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
   protected expectedFields: Field[] = [{
     field: 'domQuerySelector',
@@ -57,4 +57,4 @@ export class ClickOnElement extends BaseStep implements StepInterface {
 
 }
 
-export { ClickOnElement as Step };
+export { SeleniumClickOnElement as Step };

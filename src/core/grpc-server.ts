@@ -3,7 +3,7 @@ import * as grpc from 'grpc';
 import { CogServiceService as CogService } from '../proto/cog_grpc_pb';
 import { Cog } from './cog';
 import { ClientWrapper } from '../client/client-wrapper';
-import { ThenableWebDriver, Builder } from 'selenium-webdriver';
+import { Capabilities } from 'selenium-webdriver';
 import * as chrome from 'selenium-webdriver/chrome';
 
 // import puppeteerExtra from 'puppeteer-extra';
@@ -46,39 +46,28 @@ if (azureTenantId && azureClientId && azureClientSecret && azureStorageAccount &
   blobContainerClient = blobServiceClient.getContainerClient(azureContainerName);
 }
 
-async function instantiateCluster(): Promise<ThenableWebDriver> {
-  let driver;
-  try {
-    const builder = new Builder().forBrowser('chrome');
-    const options = new chrome.Options();
-    // options.headless();                        // run headless Chrome
-    options.excludeSwitches('enable-logging');    // disable 'DevTools listening on...'
-    options.addArguments('--no-sandbox');         // not an advised flag but eliminates "DevToolsActivePort file doesn't exist" error.
-    driver = await builder.setChromeOptions(options).build();
-    return driver;
-  } catch (e) {
-    console.log(`Error initializing Cluster: ${e}`);
-  }
-}
+const browserMap = {
+  chrome: {
+    host,
+    port: 4444,
+    caps: Capabilities.chrome(),
+  },
+  firefox: {
+    host,
+    port: 4445,
+    caps: Capabilities.firefox(),
+  },
+  edge: {
+    host,
+    port: 4446,
+    caps: Capabilities.edge(),
+  },
+};
 
-instantiateCluster().then((driver) => {
-  server.addService(CogService, new Cog(driver, ClientWrapper, {}));
-  server.bind(`${host}:${port}`, credentials);
-  server.start();
-  console.log(`Server started, listening: ${host}:${port}`);
-
-  process.on('SIGINT', () => {
-    driver.quit();
-  });
-});
-
-// Special handler for when Puppeteer Cluster is in an unrecoverable state.
-// @see https://github.com/thomasdondorf/puppeteer-driver/issues/207
-process.on('unhandledRejection', (up) => {
-  if (up.toString().includes('Unable to restart chrome')) {
-    throw up;
-  }
-});
+server.addService(CogService, new Cog(ClientWrapper, {}, blobContainerClient, browserMap));
+server.bind(`${host}:${port}`, credentials);
+server.start();
+console.log(`Server started, listening: ${host}:${port}`);
 
 // Export server for testing.
 export default server;
