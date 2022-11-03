@@ -15,6 +15,7 @@ const { BlobServiceClient } = require('@azure/storage-blob');
 const server = new grpc.Server();
 const port = process.env.PORT || 28866;
 const host = process.env.HOST || '0.0.0.0';
+const driverHost = process.env.DRIVER_HOST || '0.0.0.0';
 const azureTenantId = process.env.AZURE_TENANT_ID || null;
 const azureClientId = process.env.AZURE_CLIENT_ID || null;
 const azureClientSecret = process.env.AZURE_CLIENT_SECRET || null;
@@ -48,17 +49,17 @@ if (azureTenantId && azureClientId && azureClientSecret && azureStorageAccount &
 
 const browserMap = {
   chrome: {
-    host,
+    host: driverHost,
     port: 4444,
     caps: Capabilities.chrome(),
   },
   firefox: {
-    host,
+    host: driverHost,
     port: 4445,
     caps: Capabilities.firefox(),
   },
   edge: {
-    host,
+    host: driverHost,
     port: 4446,
     caps: Capabilities.edge(),
   },
