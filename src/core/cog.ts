@@ -112,7 +112,6 @@ export class Cog implements ICogServiceServer {
         }
         const browserName: string = stepData.browser;
 
-
         const caps = this.capabilitiesMap[browserName];
         browser = await new Builder()
           .withCapabilities(caps)
