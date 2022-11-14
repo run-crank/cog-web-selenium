@@ -1,5 +1,5 @@
-scenario: Demonstrate the Web Cog
-description: Proves that this Cog works.
+scenario: Demonstrate the Web Selenium Cog
+description: Proves that this Selenium Cog works.
 
 steps:
 - step: First, navigate using selenium edge to http://go.automatoninc.com/dev-qa-email-confirmation.html
