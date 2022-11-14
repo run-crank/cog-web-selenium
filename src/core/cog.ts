@@ -9,14 +9,22 @@ import {
   StepDefinition,
 } from '../proto/cog_pb';
 import { ClientWrapper } from '../client/client-wrapper';
-import { ThenableWebDriver, Builder } from 'selenium-webdriver';
+import { ThenableWebDriver, Builder, Capabilities } from 'selenium-webdriver';
+import { NoSuchSessionError } from 'selenium-webdriver/lib/error';
 
 export class Cog implements ICogServiceServer {
 
   private steps: StepInterface[];
+  private capabilitiesMap: {};
 
-  constructor(private clientWrapperClass, private stepMap: any = {}, private blobContainerClient, private browserMap) {
+  constructor(private clientWrapperClass, private stepMap: any = {}, private blobContainerClient, private seleniumHubHost) {
     this.steps = [].concat(...Object.values(this.getSteps(`${__dirname}/../steps`, clientWrapperClass)));
+
+    this.capabilitiesMap = {
+      chrome: Capabilities.chrome(),
+      firefox: Capabilities.firefox(),
+      edge: Capabilities.edge(),
+    };
   }
 
   private getSteps(dir: string, clientWrapperClass) {
@@ -94,7 +102,7 @@ export class Cog implements ICogServiceServer {
         };
         const stepData: any = step.getData().toJavaScript();
         // Throw an error if the browser name is undefined or unsupported.
-        if (!stepData.browser || !Object.keys(this.browserMap).includes(stepData.browser)) {
+        if (!stepData.browser || !Object.keys(this.capabilitiesMap).includes(stepData.browser)) {
           const errorResponse = new RunStepResponse();
           errorResponse.setOutcome(RunStepResponse.Outcome.ERROR);
           errorResponse.setMessageFormat('Unsupported browser %s');
@@ -103,10 +111,12 @@ export class Cog implements ICogServiceServer {
           call.end();
         }
         const browserName: string = stepData.browser;
-        const caps = this.browserMap[browserName].caps;
+
+
+        const caps = this.capabilitiesMap[browserName];
         browser = await new Builder()
           .withCapabilities(caps)
-          .usingServer(`http://${this.browserMap[browserName].host}:${this.browserMap[browserName].port}`)
+          .usingServer(`http://${this.seleniumHubHost}:4444`)
           .build();
         console.log(`>>>>> SESSION CREATED ON BROWSER: ${browserName}`);
         client = await this.getClientWrapper(browser, call.metadata, idMap);
@@ -123,10 +133,17 @@ export class Cog implements ICogServiceServer {
       if (processing === 0 && clientEnded) {
         // End the browser session if there is one.
         try {
-          setTimeout(() => { browser.quit(); }, 100);
+          // If there is no session, this will throw to the catch block and do nothing
+          await browser.getSession();
+          await new Promise(resolve => setTimeout(resolve, 200));
+          await browser.quit();
           console.log('>>>>> BROWSER SESSION ENDED');
         } catch (e) {
-          // Do nothing
+          if (e instanceof NoSuchSessionError) {
+            // Do nothing
+          } else {
+            console.log('Error closing browser: ', e);
+          }
         }
         call.end();
       }
@@ -138,10 +155,17 @@ export class Cog implements ICogServiceServer {
       if (processing === 0) {
         // End the browser session if there is one.
         try {
-          setTimeout(() => { browser.quit(); }, 100);
+          // If there is no session, this will throw to the catch block and do nothing
+          await browser.getSession();
+          await new Promise(resolve => setTimeout(resolve, 200));
+          await browser.quit();
           console.log('>>>>> BROWSER SESSION ENDED');
         } catch (e) {
-          // Do nothing
+          if (e instanceof NoSuchSessionError) {
+            // Do nothing
+          } else {
+            console.log('Error closing browser: ', e);
+          }
         }
         call.end();
       }
@@ -156,7 +180,7 @@ export class Cog implements ICogServiceServer {
 
     const step: Step = call.request.getStep();
     const stepData: any = step.getData().toJavaScript();
-    if (!stepData.browser || !Object.keys(this.browserMap).includes(stepData.browser)) {
+    if (!stepData.browser || !Object.keys(this.capabilitiesMap).includes(stepData.browser)) {
       const errorResponse = new RunStepResponse();
       errorResponse.setOutcome(RunStepResponse.Outcome.ERROR);
       errorResponse.setMessageFormat('Unsupported browser %s');
@@ -164,19 +188,26 @@ export class Cog implements ICogServiceServer {
       callback(null, errorResponse);
     }
     const browserName: string = stepData.browser;
-    const caps = this.browserMap[browserName].caps;
+    const caps = this.capabilitiesMap[browserName];
     browser = await new Builder()
       .withCapabilities(caps)
-      .usingServer(`http://${this.browserMap[browserName].host}:${this.browserMap[browserName].port}`)
+      .usingServer(`http://${this.seleniumHubHost}:4444`)
       .build();
     console.log(`>>>>> SESSION CREATED ON BROWSER: ${browserName}`);
     const response: RunStepResponse = await this.dispatchStep(step, browser, call.request, call.metadata);
     // End the browser session if there is one.
     try {
-      setTimeout(() => { browser.quit(); }, 100);
+      // If there is no session, this will throw to the catch block and do nothing
+      await browser.getSession();
+      await new Promise(resolve => setTimeout(resolve, 200));
+      await browser.quit();
       console.log('>>>>> BROWSER SESSION ENDED');
     } catch (e) {
-      // Do nothing
+      if (e instanceof NoSuchSessionError) {
+        // Do nothing
+      } else {
+        console.log('Error closing browser: ', e);
+      }
     }
     callback(null, response);
   }

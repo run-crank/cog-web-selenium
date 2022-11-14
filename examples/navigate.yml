@@ -1,0 +1,5 @@
+scenario: Demonstrate the Web Cog
+description: Proves that this Cog works.
+
+steps:
+- step: navigate using selenium firefox to https://www.stackmoxie.com

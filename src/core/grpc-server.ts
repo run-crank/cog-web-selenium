@@ -3,19 +3,14 @@ import * as grpc from 'grpc';
 import { CogServiceService as CogService } from '../proto/cog_grpc_pb';
 import { Cog } from './cog';
 import { ClientWrapper } from '../client/client-wrapper';
-import { Capabilities } from 'selenium-webdriver';
-import * as chrome from 'selenium-webdriver/chrome';
 
-// import puppeteerExtra from 'puppeteer-extra';
-// import puppeteerExtraPluginRecaptcha from 'puppeteer-extra-plugin-recaptcha';
-// const stealthPlugin = require('puppeteer-extra-plugin-stealth'); // needs to use require
 const { DefaultAzureCredential } = require('@azure/identity');
 const { BlobServiceClient } = require('@azure/storage-blob');
 
 const server = new grpc.Server();
 const port = process.env.PORT || 28866;
 const host = process.env.HOST || '0.0.0.0';
-const driverHost = process.env.DRIVER_HOST || '0.0.0.0';
+const seleniumHubHost = process.env.SELENIUM_HUB_HOST || '0.0.0.0';
 const azureTenantId = process.env.AZURE_TENANT_ID || null;
 const azureClientId = process.env.AZURE_CLIENT_ID || null;
 const azureClientSecret = process.env.AZURE_CLIENT_SECRET || null;
@@ -47,25 +42,7 @@ if (azureTenantId && azureClientId && azureClientSecret && azureStorageAccount &
   blobContainerClient = blobServiceClient.getContainerClient(azureContainerName);
 }
 
-const browserMap = {
-  chrome: {
-    host: driverHost,
-    port: 4444,
-    caps: Capabilities.chrome(),
-  },
-  firefox: {
-    host: driverHost,
-    port: 4445,
-    caps: Capabilities.firefox(),
-  },
-  edge: {
-    host: driverHost,
-    port: 4446,
-    caps: Capabilities.edge(),
-  },
-};
-
-server.addService(CogService, new Cog(ClientWrapper, {}, blobContainerClient, browserMap));
+server.addService(CogService, new Cog(ClientWrapper, {}, blobContainerClient, seleniumHubHost));
 server.bind(`${host}:${port}`, credentials);
 server.start();
 console.log(`Server started, listening: ${host}:${port}`);
