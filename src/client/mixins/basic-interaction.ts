@@ -9,9 +9,33 @@ export class BasicInteractionAware {
   public clientReady: Promise<boolean>;
   public blobContainerClient: any;
 
-  public async navigateToUrl(url: string, browser: string = 'chrome') {
+  public async navigateToUrl(url: string, browser: string = 'chrome', size: string = null) {
     console.log('>>>>> inside navigateToUrl basic interaction');
     console.timeLog('time');
+
+    switch (size) {
+      case 'small':
+        await this.client.manage().window().setRect({
+          height: 480,
+          width: 640,
+        });
+        break;
+      case 'medium':
+        await this.client.manage().window().setRect({
+          height: 720,
+          width: 1280,
+        });
+        break;
+      case 'large':
+        await this.client.manage().window().setRect({
+          height: 1080,
+          width: 1920,
+        });
+        break;
+      default:
+        await this.client.manage().window().maximize();
+    }
+
     const response = await this.client.get(url);
     console.log('response', response);
     console.log('>>>>> checkpoint: finished navigating to page or timed out');

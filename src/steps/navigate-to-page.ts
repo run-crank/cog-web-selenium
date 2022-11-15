@@ -15,6 +15,11 @@ export class SeleniumNavigateToPage extends BaseStep implements StepInterface {
     field: 'webPageUrl',
     type: FieldDefinition.Type.URL,
     description: 'Page URL',
+  }, {
+    field: 'viewportSize',
+    type: FieldDefinition.Type.STRING,
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    description: 'Size of viewport (optional)',
   }];
 
   protected expectedRecords: ExpectedRecord[] = [{
@@ -33,10 +38,16 @@ export class SeleniumNavigateToPage extends BaseStep implements StepInterface {
     const stepData: any = step.getData().toJavaScript();
     const browser: string = stepData.browser;
     const url: string = stepData.webPageUrl;
+    const size: string = stepData.viewportSize || null;
+
+    if (size && !['large', 'medium', 'small'].includes(size)) {
+      return this.error('Unsupported viewport size. Please use small, medium, or large', [], []);
+    }
+
     try {
       console.time('time');
       console.log('>>>>> STARTED TIMER FOR NAVIGATE-TO-PAGE STEP');
-      await this.client.navigateToUrl(url, browser);
+      await this.client.navigateToUrl(url, browser, size);
       console.log('>>>>> checkpoint: finished navigating, ending timer');
       console.timeEnd('time');
       return this.pass('Successfully navigated to %s', [url], []);

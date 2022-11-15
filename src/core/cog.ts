@@ -132,9 +132,7 @@ export class Cog implements ICogServiceServer {
       if (processing === 0 && clientEnded) {
         // End the browser session if there is one.
         try {
-          // If there is no session, this will throw to the catch block and do nothing
-          await browser.getSession();
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new Promise(resolve => setTimeout(resolve, 300));
           await browser.quit();
           console.log('>>>>> BROWSER SESSION ENDED');
         } catch (e) {
@@ -154,9 +152,7 @@ export class Cog implements ICogServiceServer {
       if (processing === 0) {
         // End the browser session if there is one.
         try {
-          // If there is no session, this will throw to the catch block and do nothing
-          await browser.getSession();
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new Promise(resolve => setTimeout(resolve, 300));
           await browser.quit();
           console.log('>>>>> BROWSER SESSION ENDED');
         } catch (e) {
@@ -196,9 +192,7 @@ export class Cog implements ICogServiceServer {
     const response: RunStepResponse = await this.dispatchStep(step, browser, call.request, call.metadata);
     // End the browser session if there is one.
     try {
-      // If there is no session, this will throw to the catch block and do nothing
-      await browser.getSession();
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, 300));
       await browser.quit();
       console.log('>>>>> BROWSER SESSION ENDED');
     } catch (e) {
