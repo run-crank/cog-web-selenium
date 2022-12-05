@@ -1,6 +1,6 @@
 import { Promise as Bluebird } from 'bluebird';
 import { keyCodes } from '../_shared/constants/key-codes.constant';
-import { WebDriver, By, until } from 'selenium-webdriver';
+import { WebElement, By, until } from 'selenium-webdriver';
 
 export class BasicInteractionAware {
   // public client: Page;
@@ -45,7 +45,39 @@ export class BasicInteractionAware {
 
   public async fillOutField(selector: string, value: any) {
     await this.client.wait(until.elementLocated(By.css(selector)), 10000);
-    return await this.client.findElement(By.css(selector)).sendKeys(value);
+    const webElement = await this.client.findElement(By.css(selector));
+    const fieldMethod = await this.getFieldMethod(webElement);
+
+    switch (fieldMethod) {
+      case 'choose':
+        try {
+          await this.selectOption(webElement, value);
+        } catch (e) {
+          throw Error("Drop down may not be visible or isn't selectable.");
+        }
+        break;
+
+      case 'tick':
+        if (value) {
+          try {
+            const checked = await webElement.getAttribute('checked');
+            if (!!value !== !!checked) {
+              await webElement.click();
+            }
+          } catch (e) {
+            throw Error("Checkbox may not be visible or isn't checkable.");
+          }
+        }
+        break;
+
+      case 'type':
+        try {
+          await webElement.sendKeys(value);
+        } catch (e) {
+          throw Error("Field may not be visible, or exist, or it can't be typed in.");
+        }
+        break;
+    }
   }
 
   public async clickElement(selector: string) {
@@ -407,32 +439,45 @@ export class BasicInteractionAware {
   //   );
   // }
 
-  // /**
-  //  * Returns a method name representing how to enter a value into an element,
-  //  * found using the given DOM Query Selector.
-  //  *
-  //  * @param {String} selector - The domQuerySelector of the element.
-  //  * @returns {String} - One of choose (for select elements), tick (for
-  //  *   checkbox inputs), or type (for any other input).
-  //  */
-  // private async getFieldMethod(selector: string) {
-  //   return await this.client['___currentFrame'].evaluate(
-  //     (selector) => {
-  //       let method: string;
-  //       const element = document.querySelector(selector);
-  //       const tagName = (element.tagName || '').toLowerCase();
-  //       if (tagName === 'select') {
-  //         method = 'choose';
-  //       } else if (tagName === 'input' && element.type === 'checkbox') {
-  //         method = 'tick';
-  //       } else if (tagName === 'input' && element.type === 'radio') {
-  //         method = 'radio';
-  //       } else {
-  //         method = 'type';
-  //       }
-  //       return method;
-  //     },
-  //     selector,
-  //   );
-  // }
+  /**
+   * Returns a method name representing how to enter a value into an element,
+   * found using the given DOM Query Selector.
+   *
+   * @param {String} webElement - The webElement to evaluate.
+   * @returns {String} - One of choose (for select elements), tick (for
+   *   checkbox inputs), or type (for any other input).
+   */
+  private async getFieldMethod(webElement: WebElement) {
+    let method: string;
+    const tagName = await webElement.getTagName();
+    const type = await webElement.getAttribute('type');
+
+    if (tagName === 'select') {
+      method = 'choose';
+    } else if (tagName === 'input' && ['checkbox', 'radio'].includes(type)) {
+      method = 'tick';
+    } else {
+      method = 'type';
+    }
+    return method;
+  }
+
+  private async selectOption(webElement, value) {
+    let desiredOption;
+    // Click to open up dropdown
+    await webElement.click();
+
+    const options = await webElement.findElements(By.css('option'));
+    // Evaluate all of the options in parallel to find the desired option.
+    await Promise.all(options.map(async (option) => {
+      const text = await option.getText();
+      if (value === text) {
+        desiredOption = option;
+      }
+    }));
+
+    if (desiredOption) {
+      await desiredOption.click();
+    }
+  }
 }
