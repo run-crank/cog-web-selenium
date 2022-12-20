@@ -1,0 +1,7 @@
+scenario: Demonstrate the Web Selenium Cog
+description: Proves that this Selenium Cog works.
+
+steps:
+- step: First, navigate using selenium chrome to http://www.yahoo.com
+- step: use selenium to scroll to 50% of the page
+- step: use selenium to scroll to 90% of the page
