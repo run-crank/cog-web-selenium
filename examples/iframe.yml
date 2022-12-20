@@ -1,0 +1,7 @@
+scenario: Demonstrate the Web Selenium Cog
+description: Proves that this Selenium Cog works.
+
+steps:
+- step: First, navigate using selenium chrome to http://www.yahoo.com
+- step: Then use selenium to focus on the iframe[name="__uspapiLocator"] frame
+- step: Then use selenium to focus on the main frame

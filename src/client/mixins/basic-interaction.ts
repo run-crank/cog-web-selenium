@@ -85,15 +85,14 @@ export class BasicInteractionAware {
     return await this.client.findElement(By.css(selector)).click();
   }
 
-  // public async focusFrame(domQuerySelector: string) {
-  //   if (domQuerySelector === 'main') {
-  //     this.client['___currentFrame'] = this.client.mainFrame();
-  //   } else {
-  //     await this.client.waitForSelector(domQuerySelector);
-  //     const elementHandle = await this.client.$(domQuerySelector);
-  //     this.client['___currentFrame'] = await elementHandle.contentFrame();
-  //   }
-  // }
+  public async focusFrame(domQuerySelector: string) {
+    if (domQuerySelector === 'main') {
+      await this.client.switchTo().defaultContent();
+    } else {
+      await this.client.wait(until.elementLocated(By.css(domQuerySelector)), 10000);
+      await this.client.switchTo().frame(this.client.findElement(By.css(domQuerySelector)));
+    }
+  }
 
   // public async scrollTo(depth: number) {
   //   try {
