@@ -153,7 +153,7 @@ export class BasicInteractionAware {
     try {
       await this.client.actions().keyDown(Key[keyCodes[key]]).perform();
     } catch (e) {
-      throw e;
+      throw Error(`Unable to press key: ${e}`);;
     }
   }
 

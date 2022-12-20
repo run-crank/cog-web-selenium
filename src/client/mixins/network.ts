@@ -1,7 +1,6 @@
 import { isNullOrUndefined } from 'util';
 import * as util from '@run-crank/utilities';
 import { URL } from 'url';
-import * as querystring from 'querystring';
 import { ThenableWebDriver } from 'selenium-webdriver';
 
 const OTHER_REQUEST_METHODS = ['POST', 'PATCH', 'PUT'];
@@ -15,7 +14,7 @@ export class NetworkAware {
       .then((requests: any) => {
         let matchedRequests = requests.filter(r => r.name && r.name.startsWith(baseUrl));
 
-        if (pathContains) {
+        if (pathContains.length) {
           matchedRequests = matchedRequests.filter(r => (new URL(r.name).pathname.includes(pathContains) && pathContains));
         }
 
