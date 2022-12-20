@@ -1,0 +1,6 @@
+scenario: Demonstrate the Web Selenium Cog
+description: Proves the check a network request step works.
+
+steps:
+- step: First, navigate using selenium chrome to https://www.google.com
+- step: use selenium to find 18 matching network requests for https://www.google.com

@@ -113,10 +113,15 @@ export class Cog implements ICogServiceServer {
         const browserName: string = stepData.browser;
 
         const caps = this.capabilitiesMap[browserName];
-        browser = await new Builder()
+        caps['goog:loggingPrefs'] = { 'performance': 'ALL' };
+        try {
+          browser = await new Builder()
           .withCapabilities(caps)
           .usingServer(`http://${this.seleniumHubHost}:4444`)
           .build();
+        } catch (e) {
+          console.log('ERROR CONNECTING ', e);
+        }
         console.log(`>>>>> SESSION CREATED ON BROWSER: ${browserName}`);
         client = await this.getClientWrapper(browser, call.metadata, idMap);
         clientCreated = true;
@@ -134,7 +139,7 @@ export class Cog implements ICogServiceServer {
         try {
           await new Promise(resolve => setTimeout(resolve, 300));
           await browser.quit();
-          console.log('>>>>> BROWSER SESSION ENDED');
+          console.log('>>>>> BROWSER SESSION ENDED 1');
         } catch (e) {
           if (e instanceof NoSuchSessionError) {
             // Do nothing
@@ -154,7 +159,7 @@ export class Cog implements ICogServiceServer {
         try {
           await new Promise(resolve => setTimeout(resolve, 300));
           await browser.quit();
-          console.log('>>>>> BROWSER SESSION ENDED');
+          console.log('>>>>> BROWSER SESSION ENDED 2');
         } catch (e) {
           if (e instanceof NoSuchSessionError) {
             // Do nothing
@@ -184,6 +189,7 @@ export class Cog implements ICogServiceServer {
     }
     const browserName: string = stepData.browser;
     const caps = this.capabilitiesMap[browserName];
+    caps['goog:loggingPrefs'] = { 'performance': 'ALL' };
     browser = await new Builder()
       .withCapabilities(caps)
       .usingServer(`http://${this.seleniumHubHost}:4444`)
