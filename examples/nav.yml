@@ -2,8 +2,8 @@ scenario: Demonstrate the Web Selenium Cog
 description: Proves that this Selenium Cog works.
 
 steps:
-- step: First, navigate using selenium edge to http://go.automatoninc.com/dev-qa-email-confirmation.html
+- step: First, navigate using selenium chrome to http://go.automatoninc.com/dev-qa-email-confirmation.html
 - step: Then use selenium to fill out input[name=FirstName] with Atoma
 - step: And use selenium to fill out input[name=LastName] with Tommy
 - step: And use selenium to fill out input[name=Email] with atommy@example.com
-- step: Finally, use selenium to click the page element button[type=submit]
+# - step: Finally, use selenium to click the page element button[type=submit]

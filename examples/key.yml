@@ -1,0 +1,9 @@
+scenario: Demonstrate the Web Selenium Cog
+description: Proves the press a key step works.
+
+steps:
+- step: First, navigate using selenium chrome to https://www.yahoo.com
+- step: Then use selenium to press the down_arrow key
+- step: Then use selenium to press the down_arrow key
+- step: Then use selenium to press the down_arrow key
+- step: Then use selenium to press the down_arrow key

@@ -1,7 +1,8 @@
 import * as grpc from 'grpc';
 import { BasicInteractionAware } from './mixins';
 import { Field } from '../core/base-step';
-import { Builder, Browser, By, Key, until, ThenableWebDriver } from 'selenium-webdriver';
+import { ThenableWebDriver } from 'selenium-webdriver';
+import { NetworkAware } from './mixins/network';
 
 class ClientWrapper {
 
@@ -17,9 +18,9 @@ class ClientWrapper {
   }
 }
 
-interface ClientWrapper extends BasicInteractionAware { }
+interface ClientWrapper extends BasicInteractionAware, NetworkAware {}
 
-applyMixins(ClientWrapper, [BasicInteractionAware]);
+applyMixins(ClientWrapper, [BasicInteractionAware, NetworkAware]);
 
 function applyMixins(derivedCtor: any, baseCtors: any[]) {
   baseCtors.forEach((baseCtor) => {

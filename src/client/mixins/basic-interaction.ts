@@ -1,6 +1,6 @@
 import { Promise as Bluebird } from 'bluebird';
 import { keyCodes } from '../_shared/constants/key-codes.constant';
-import { WebElement, By, until } from 'selenium-webdriver';
+import { WebElement, By, until, Key } from 'selenium-webdriver';
 
 export class BasicInteractionAware {
   // public client: Page;
@@ -148,15 +148,14 @@ export class BasicInteractionAware {
   //   }
   // }
 
-  // public async pressKey(key: string) {
-  //   if (!keyCodes[key]) throw Error('Key is invalid');
-
-  //   try {
-  //     await this.client.keyboard.type(String.fromCharCode(keyCodes[key]));
-  //   } catch (e) {
-  //     throw e;
-  //   }
-  // }
+  public async pressKey(key: string) {
+    if (!keyCodes[key]) throw Error('Key is invalid');
+    try {
+      await this.client.actions().keyDown(Key[keyCodes[key]]).perform();
+    } catch (e) {
+      throw e;
+    }
+  }
 
   // public async clickElement(selector: string) {
   //   try {
