@@ -94,58 +94,58 @@ export class BasicInteractionAware {
     }
   }
 
-  // public async scrollTo(depth: number) {
-  //   try {
-  //     // Perform scroll.
-  //     await this.client['___currentFrame'].evaluate(
-  //       (percent) => {
-  //         const floatValue = percent / 100;
-  //         window.scroll({
-  //           left: 0,
-  //           top: document.body.scrollHeight * floatValue,
-  //           behavior: 'smooth',
-  //         });
-  //       },
-  //       depth,
-  //     );
+  public async scrollTo(depth: number) {
+    try {
+      // Perform scroll.
+      await this.client.executeScript(
+        (percent) => {
+          const floatValue = percent / 100;
+          window.scroll({
+            left: 0,
+            top: document.body.scrollHeight * floatValue,
+            behavior: 'smooth',
+          });
+        },
+        depth,
+      );
 
-  //     // Wait until scroll completes. @see https://stackoverflow.com/a/57867348/12064302
-  //     await this.client['___currentFrame'].evaluate(() => {
-  //       return new Promise((resolve) => {
-  //         let lastPos = null;
-  //         let sameCount = 0;
-  //         window.requestAnimationFrame(checkScrollY);
+      // Wait until scroll completes. @see https://stackoverflow.com/a/57867348/12064302
+      await this.client.executeScript(() => {
+        return new Promise((resolve) => {
+          let lastPos = null;
+          let sameCount = 0;
+          window.requestAnimationFrame(checkScrollY);
 
-  //         // This function will be called every painting frame for the duration
-  //         // of the smooth scroll operation.
-  //         function checkScrollY() {
-  //           // Check our current position
-  //           const newPos = window.scrollY;
+          // This function will be called every painting frame for the duration
+          // of the smooth scroll operation.
+          function checkScrollY() {
+            // Check our current position
+            const newPos = window.scrollY;
 
-  //           // If the current position is the same as the last, and it was the
-  //           // same as the last for two frames in a row, then scroll completed.
-  //           if (newPos === lastPos) {
-  //             sameCount = sameCount + 1;
-  //             if (sameCount > 2) {
-  //               // Once a scroll completes, regardless of if it landed at the
-  //               // exact right location, we can consider the scroll complete.
-  //               return resolve(null);
-  //             }
-  //           } else {
-  //             // Otherwise, reset our counter and set our current position.
-  //             sameCount = 0;
-  //             lastPos = newPos;
-  //           }
+            // If the current position is the same as the last, and it was the
+            // same as the last for two frames in a row, then scroll completed.
+            if (newPos === lastPos) {
+              sameCount = sameCount + 1;
+              if (sameCount > 2) {
+                // Once a scroll completes, regardless of if it landed at the
+                // exact right location, we can consider the scroll complete.
+                return resolve(null);
+              }
+            } else {
+              // Otherwise, reset our counter and set our current position.
+              sameCount = 0;
+              lastPos = newPos;
+            }
 
-  //           // Check again during next painting frame
-  //           window.requestAnimationFrame(checkScrollY);
-  //         }
-  //       });
-  //     });
-  //   } catch (e) {
-  //     throw Error(`Unable to scroll to ${depth} percent depth: ${e}`);
-  //   }
-  // }
+            // Check again during next painting frame
+            window.requestAnimationFrame(checkScrollY);
+          }
+        });
+      });
+    } catch (e) {
+      throw Error(`Unable to scroll to ${depth} percent depth: ${e}`);
+    }
+  }
 
   public async pressKey(key: string) {
     if (!keyCodes[key]) throw Error('Key is invalid');
