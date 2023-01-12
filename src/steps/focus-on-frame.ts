@@ -7,6 +7,8 @@ export class SeleniumFocusOnFrame extends BaseStep implements StepInterface {
   // tslint:disable-next-line:max-line-length
   protected stepExpression: string = 'use selenium to focus on the (?<domQuerySelector>.+) frame';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['interact'];
+  protected targetObject: string = 'Focus on frame';
   protected expectedFields: Field[] = [{
     field: 'domQuerySelector',
     type: FieldDefinition.Type.STRING,

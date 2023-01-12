@@ -7,6 +7,8 @@ export class SeleniumEnterValueIntoField extends BaseStep implements StepInterfa
   // tslint:disable-next-line:max-line-length
   protected stepExpression: string = 'use selenium to fill out (?<domQuerySelector>.+) with (?<value>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['interact'];
+  protected targetObject: string = 'Fill out field';
   protected expectedFields: Field[] = [{
     field: 'domQuerySelector',
     type: FieldDefinition.Type.STRING,

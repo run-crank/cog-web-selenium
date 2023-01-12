@@ -3,9 +3,11 @@ import { Step, RunStepResponse, FieldDefinition, StepDefinition } from '../proto
 
 export class SeleniumPressKey extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Press a Key';
+  protected stepName: string = 'Press a key';
   protected stepExpression: string = 'use selenium to press the (?<key>.+) key';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['interact'];
+  protected targetObject: string = 'Press a key';
   protected expectedFields: Field[] = [{
     field: 'key',
     type: FieldDefinition.Type.STRING,

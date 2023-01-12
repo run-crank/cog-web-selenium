@@ -7,6 +7,8 @@ export class SeleniumNavigateToPage extends BaseStep implements StepInterface {
   // tslint:disable-next-line:max-line-length
   protected stepExpression: string = 'navigate using selenium (?<browser>.+) to (?<webPageUrl>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['navigate'];
+  protected targetObject: string = 'Navigate to page';
   protected expectedFields: Field[] = [{
     field: 'browser',
     type: FieldDefinition.Type.STRING,
