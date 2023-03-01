@@ -10,9 +10,14 @@ export class SeleniumEnterValueIntoField extends BaseStep implements StepInterfa
   protected actionList: string[] = ['interact'];
   protected targetObject: string = 'Fill out field';
   protected expectedFields: Field[] = [{
+    field: 'selectBy',
+    type: FieldDefinition.Type.STRING,
+    description: 'Select by',
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+  }, {
     field: 'domQuerySelector',
     type: FieldDefinition.Type.STRING,
-    description: "Field's DOM Query Selector",
+    description: "Field's Selector",
   }, {
     field: 'value',
     type: FieldDefinition.Type.ANYSCALAR,
@@ -36,12 +41,17 @@ export class SeleniumEnterValueIntoField extends BaseStep implements StepInterfa
 
   async executeStep(step: Step): Promise<RunStepResponse> {
     const stepData: any = step.getData().toJavaScript();
+    const selectBy: string = stepData.selectBy || 'css';
     const selector: string = stepData.domQuerySelector;
     const value: any = stepData.value;
 
+    if (selectBy && !['css', 'xpath', 'partialLinkText'].includes(selectBy)) {
+      return this.error('Unsupported selection strategy. Please use css, xpath, or partialLinkText', [], []);
+    }
+
     // Determine how to fill out the field, and then try.
     try {
-      await this.client.fillOutField(selector, value);
+      await this.client.fillOutField(selector, value, selectBy);
       return this.pass('Successfully filled out %s with %s', [selector, value], []);
     } catch (e) {
       return this.error('There was a problem filling out %s with %s: %s', [selector, value, e.toString()], []);

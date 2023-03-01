@@ -10,9 +10,14 @@ export class SeleniumClickOnElement extends BaseStep implements StepInterface {
   protected actionList: string[] = ['interact'];
   protected targetObject: string = 'Click an element';
   protected expectedFields: Field[] = [{
+    field: 'selectBy',
+    type: FieldDefinition.Type.STRING,
+    description: 'Select by',
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+  }, {
     field: 'domQuerySelector',
     type: FieldDefinition.Type.STRING,
-    description: 'Element\'s DOM Query Selector',
+    description: 'Element\'s Selector',
   }];
 
   protected expectedRecords: ExpectedRecord[] = [{
@@ -28,10 +33,15 @@ export class SeleniumClickOnElement extends BaseStep implements StepInterface {
 
   async executeStep(step: Step): Promise<RunStepResponse> {
     const stepData: any = step.getData().toJavaScript();
+    const selectBy: string = stepData.selectBy || 'css';
     const selector: string = stepData.domQuerySelector;
 
+    if (selectBy && !['css', 'xpath', 'partialLinkText'].includes(selectBy)) {
+      return this.error('Unsupported selection strategy. Please use css, xpath, or partialLinkText', [], []);
+    }
+
     try {
-      this.client.clickElement(selector);
+      this.client.clickElement(selector, selectBy);
       return this.pass('Successfully clicked element: %s', [selector], []);
     } catch (e) {
       return this.error(
