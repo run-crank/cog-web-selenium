@@ -16,8 +16,8 @@ export class BasicInteractionAware {
     switch (size) {
       case 'small':
         await this.client.manage().window().setRect({
-          height: 480,
-          width: 640,
+          height: 640,
+          width: 480,
         });
         break;
       case 'medium':
@@ -43,9 +43,9 @@ export class BasicInteractionAware {
     return;
   }
 
-  public async fillOutField(selector: string, value: any) {
-    await this.client.wait(until.elementLocated(By.css(selector)), 10000);
-    const webElement = await this.client.findElement(By.css(selector));
+  public async fillOutField(selector: string, value: any, selectBy: string = 'css') {
+    await this.client.wait(until.elementLocated(By[selectBy](selector)), 10000);
+    const webElement = await this.client.findElement(By[selectBy](selector));
     const fieldMethod = await this.getFieldMethod(webElement);
 
     switch (fieldMethod) {
@@ -80,9 +80,9 @@ export class BasicInteractionAware {
     }
   }
 
-  public async clickElement(selector: string) {
-    await this.client.wait(until.elementLocated(By.css(selector)), 10000);
-    return await this.client.findElement(By.css(selector)).click();
+  public async clickElement(selector: string, selectBy: string = 'css') {
+    await this.client.wait(until.elementLocated(By[selectBy](selector)), 10000);
+    return await this.client.findElement(By[selectBy](selector)).click();
   }
 
   public async focusFrame(domQuerySelector: string) {
