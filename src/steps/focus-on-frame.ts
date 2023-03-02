@@ -10,6 +10,11 @@ export class SeleniumFocusOnFrame extends BaseStep implements StepInterface {
   protected actionList: string[] = ['interact'];
   protected targetObject: string = 'Focus on frame';
   protected expectedFields: Field[] = [{
+    field: 'selectBy',
+    type: FieldDefinition.Type.STRING,
+    description: 'Select by',
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+  }, {
     field: 'domQuerySelector',
     type: FieldDefinition.Type.STRING,
     description: 'The iframe\'s DOM query selector, or "main" for the main frame',
@@ -17,10 +22,15 @@ export class SeleniumFocusOnFrame extends BaseStep implements StepInterface {
 
   async executeStep(step: Step): Promise<RunStepResponse> {
     const stepData: any = step.getData().toJavaScript();
+    const selectBy: string = stepData.selectBy || 'css';
     const iframeSelector: string = stepData.domQuerySelector;
 
+    if (selectBy && !['css', 'xpath', 'partialLinkText'].includes(selectBy)) {
+      return this.error('Unsupported selection strategy. Please use css, xpath, or partialLinkText', [], []);
+    }
+
     try {
-      await this.client.focusFrame(iframeSelector);
+      await this.client.focusFrame(iframeSelector, selectBy);
       const screenshot = await this.client.client.takeScreenshot();
       const binaryRecord = this.binary('screenshot', 'Screenshot', 'image/png', screenshot);
       const record = this.createRecord(iframeSelector);

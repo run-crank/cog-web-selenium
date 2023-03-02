@@ -85,12 +85,12 @@ export class BasicInteractionAware {
     return await this.client.findElement(By[selectBy](selector)).click();
   }
 
-  public async focusFrame(domQuerySelector: string) {
+  public async focusFrame(domQuerySelector: string, selectBy: string = 'css') {
     if (domQuerySelector === 'main') {
       await this.client.switchTo().defaultContent();
     } else {
-      await this.client.wait(until.elementLocated(By.css(domQuerySelector)), 10000);
-      await this.client.switchTo().frame(this.client.findElement(By.css(domQuerySelector)));
+      await this.client.wait(until.elementLocated(By[selectBy](domQuerySelector)), 10000);
+      await this.client.switchTo().frame(this.client.findElement(By[selectBy](domQuerySelector)));
     }
   }
 
