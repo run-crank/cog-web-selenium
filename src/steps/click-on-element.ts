@@ -40,9 +40,15 @@ export class SeleniumClickOnElement extends BaseStep implements StepInterface {
       return this.error('Unsupported selection strategy. Please use css, xpath, or partialLinkText', [], []);
     }
 
+    const selectorMap = {
+      css: 'CSS Selector',
+      xpath: 'XPath',
+      partialLinkText: 'Link Text',
+    };
+
     try {
       this.client.clickElement(selector, selectBy);
-      return this.pass('Successfully clicked element: %s', [selector], []);
+      return this.pass('Successfully clicked element using %s: %s', [selectorMap[selectBy], selector], []);
     } catch (e) {
       return this.error(
         'There was a problem clicking element %s: %s', [selector, e.toString()], []);
