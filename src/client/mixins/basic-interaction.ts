@@ -16,8 +16,8 @@ export class BasicInteractionAware {
     switch (size) {
       case 'small':
         await this.client.manage().window().setRect({
-          height: 640,
-          width: 480,
+          height: 800,
+          width: 360,
         });
         break;
       case 'medium':
