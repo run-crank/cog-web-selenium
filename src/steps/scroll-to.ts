@@ -13,11 +13,6 @@ export class SeleniumScrollTo extends BaseStep implements StepInterface {
     field: 'depth',
     type: FieldDefinition.Type.NUMERIC,
     description: 'Depth',
-  }, {
-    field: 'units',
-    type: FieldDefinition.Type.STRING,
-    optionality: FieldDefinition.Optionality.OPTIONAL,
-    description: '% or px',
   }];
 
   async executeStep(step: Step): Promise<RunStepResponse> {
