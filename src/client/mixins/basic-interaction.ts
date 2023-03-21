@@ -88,6 +88,9 @@ export class BasicInteractionAware {
   public async focusFrame(domQuerySelector: string, selectBy: string = 'css') {
     if (domQuerySelector === 'main') {
       await this.client.switchTo().defaultContent();
+    } else if (domQuerySelector.startsWith('index=')) {
+      const index = domQuerySelector.slice(6);
+      await this.client.switchTo().frame(Number(index));
     } else {
       await this.client.wait(until.elementLocated(By[selectBy](domQuerySelector)), 10000);
       await this.client.switchTo().frame(this.client.findElement(By[selectBy](domQuerySelector)));
