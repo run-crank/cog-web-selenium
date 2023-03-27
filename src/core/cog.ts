@@ -114,6 +114,10 @@ export class Cog implements ICogServiceServer {
 
         const caps = this.capabilitiesMap[browserName];
         caps['goog:loggingPrefs'] = { 'performance': 'ALL' };
+        // setPageLoadStrategy to 'eager' only if waitForSources is explicitly set to false
+        if (!stepData.waitForSources && stepData.waitForSources === false) {
+          caps.setPageLoadStrategy('eager');
+        }
         try {
           browser = await new Builder()
           .withCapabilities(caps)
@@ -190,6 +194,10 @@ export class Cog implements ICogServiceServer {
     const browserName: string = stepData.browser;
     const caps = this.capabilitiesMap[browserName];
     caps['goog:loggingPrefs'] = { 'performance': 'ALL' };
+    // setPageLoadStrategy to 'eager' only if waitForSources is explicitly set to false
+    if (!stepData.waitForSources && stepData.waitForSources === false) {
+      caps.setPageLoadStrategy('eager');
+    }
     browser = await new Builder()
       .withCapabilities(caps)
       .usingServer(`http://${this.seleniumHubHost}:4444`)
