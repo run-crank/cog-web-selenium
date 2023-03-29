@@ -13,6 +13,7 @@ export class BasicInteractionAware {
     console.log('>>>>> inside navigateToUrl basic interaction');
     console.timeLog('time');
 
+    let response;
     switch (size) {
       case 'small':
         await this.client.manage().window().setRect({
@@ -36,7 +37,11 @@ export class BasicInteractionAware {
         await this.client.manage().window().maximize();
     }
 
-    const response = await this.client.get(url);
+    try {
+      response = await this.client.get(url);
+    } catch (e) {
+      throw Error(`Error navigating to ${url} - Error: ${e}`);
+    }
     console.log('response', response);
     console.log('>>>>> checkpoint: finished navigating to page or timed out');
     console.timeLog('time');
@@ -44,9 +49,20 @@ export class BasicInteractionAware {
   }
 
   public async fillOutField(selector: string, value: any, selectBy: string = 'css') {
-    await this.client.wait(until.elementLocated(By[selectBy](selector)), 10000);
-    const webElement = await this.client.findElement(By[selectBy](selector));
-    const fieldMethod = await this.getFieldMethod(webElement);
+    let webElement;
+    let fieldMethod;
+    try {
+      await this.client.wait(until.elementLocated(By[selectBy](selector)), 10000);
+      webElement = await this.client.findElement(By[selectBy](selector));
+    } catch (e) {
+      throw Error(`Could not find field with selector: ${selector} - Error: ${e}`);
+    }
+
+    try {
+      fieldMethod = await this.getFieldMethod(webElement);
+    } catch (e) {
+      throw Error(`Unable to fill out field: ${e}`);
+    }
 
     switch (fieldMethod) {
       case 'choose':
@@ -81,8 +97,12 @@ export class BasicInteractionAware {
   }
 
   public async clickElement(selector: string, selectBy: string = 'css') {
-    await this.client.wait(until.elementLocated(By[selectBy](selector)), 10000);
-    return await this.client.findElement(By[selectBy](selector)).click();
+    try {
+      await this.client.wait(until.elementLocated(By[selectBy](selector)), 10000);
+      return await this.client.findElement(By[selectBy](selector)).click();
+    } catch (e) {
+      throw Error(`Element may not be visible or clickable: ${e}`);
+    }
   }
 
   public async focusFrame(domQuerySelector: string, selectBy: string = 'css') {
@@ -90,10 +110,18 @@ export class BasicInteractionAware {
       await this.client.switchTo().defaultContent();
     } else if (domQuerySelector.startsWith('index=')) {
       const index = domQuerySelector.slice(6);
-      await this.client.switchTo().frame(Number(index));
+      try {
+        await this.client.switchTo().frame(Number(index));
+      } catch (e) {
+        throw Error(`Could not find frame with index: ${index} - Error: ${e}`);
+      }
     } else {
-      await this.client.wait(until.elementLocated(By[selectBy](domQuerySelector)), 10000);
-      await this.client.switchTo().frame(this.client.findElement(By[selectBy](domQuerySelector)));
+      try {
+        await this.client.wait(until.elementLocated(By[selectBy](domQuerySelector)), 10000);
+        await this.client.switchTo().frame(this.client.findElement(By[selectBy](domQuerySelector)));
+      } catch (e) {
+        throw Error(`Could not find frame with selector: ${domQuerySelector} - Error: ${e}`);
+      }
     }
   }
 
