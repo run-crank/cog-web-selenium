@@ -48,7 +48,7 @@ export class SeleniumNavigateToPage extends BaseStep implements StepInterface {
 
     try {
       console.time('time');
-      console.log('>>>>> STARTED TIMER FOR NAVIGATE-TO-PAGE STEP');
+      console.log('>>>>> STARTED TIMER FOR NAVIGATE-TO-PAGE STEP. URL: ', url);
       await this.client.navigateToUrl(url, browser, size);
       console.log('>>>>> checkpoint: finished navigating, ending timer');
       console.timeEnd('time');
