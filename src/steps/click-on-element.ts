@@ -47,7 +47,7 @@ export class SeleniumClickOnElement extends BaseStep implements StepInterface {
     };
 
     try {
-      this.client.clickElement(selector, selectBy);
+      await this.client.clickElement(selector, selectBy);
       return this.pass('Successfully clicked element using %s: %s', [selectorMap[selectBy], selector], []);
     } catch (e) {
       return this.error(
