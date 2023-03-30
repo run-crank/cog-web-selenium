@@ -42,7 +42,7 @@ export class SeleniumCheckNetworkRequestStep extends BaseStep implements StepInt
       await this.client.client.getCurrentUrl();
 
       console.time('networkRequestTime');
-      console.log('Evaluating network requests')
+      console.log('Evaluating network requests');
       const matchingRequests = await this.client.getNetworkRequests(baseUrl, pathContains);
       const evaluatedRequests = this.client.evaluateRequests(matchingRequests, withParameters);
       console.timeEnd('networkRequestTime');
