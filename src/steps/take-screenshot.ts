@@ -16,11 +16,15 @@ export class SeleniumTakeScreenshot extends BaseStep implements StepInterface {
   async executeStep(step: Step): Promise<RunStepResponse> {
     const stepData: any = step.getData().toJavaScript();
 
+    console.time('screenshotTime');
+    console.log('Taking Screenshot');
     try {
       const screenshot = await this.client.client.takeScreenshot();
+      console.timeEnd('screenshotTime');
       const binaryRecord = this.binary('showScreenshot', 'Screenshot', 'image/png', screenshot);
       return this.pass('Successfully took a screenshot', [], [binaryRecord]);
     } catch (e) {
+      console.timeEnd('screenshotTime');
       return this.error('There was a problem taking a screenshot: %s', [e.toString()], []);
     }
   }

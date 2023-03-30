@@ -82,7 +82,9 @@ export class Cog implements ICogServiceServer {
   }
 
   runSteps(call: grpc.ServerDuplexStream<RunStepRequest, RunStepResponse>) {
+    console.log('runSteps called');
     let processing = 0;
+    console.log('processing top of function', processing);
     let clientEnded = false;
     let client: any = null;
     let idMap: any = null;
@@ -91,6 +93,7 @@ export class Cog implements ICogServiceServer {
 
     call.on('data', async (runStepRequest: RunStepRequest) => { // tslint:disable-line
       processing = processing + 1;
+      console.log('processing start', processing);
 
       const step: Step = runStepRequest.getStep();
 
@@ -135,10 +138,12 @@ export class Cog implements ICogServiceServer {
       call.write(response);
 
       processing = processing - 1;
+      console.log('processing end', processing);
 
       // If this was the last step to process and the client has ended the stream, then end our
       // stream as well.
       if (processing === 0 && clientEnded) {
+        console.log('This was the last step to process and the client has ended the stream - ending browser session');
         // End the browser session if there is one.
         try {
           await new Promise(resolve => setTimeout(resolve, 300));
@@ -146,7 +151,7 @@ export class Cog implements ICogServiceServer {
           console.log('>>>>> BROWSER SESSION ENDED 1');
         } catch (e) {
           if (e instanceof NoSuchSessionError) {
-            // Do nothing
+            console.log('Session not found: ', e);
           } else {
             console.log('Error closing browser: ', e);
           }
@@ -156,6 +161,7 @@ export class Cog implements ICogServiceServer {
     });
 
     call.on('end', async () => {
+      console.log("call.on('end') - ending browser session");
       clientEnded = true;
       // Only end the stream if we are done processing all steps.
       if (processing === 0) {
@@ -166,7 +172,7 @@ export class Cog implements ICogServiceServer {
           console.log('>>>>> BROWSER SESSION ENDED 2');
         } catch (e) {
           if (e instanceof NoSuchSessionError) {
-            // Do nothing
+            console.log('Session not found: ', e);
           } else {
             console.log('Error closing browser: ', e);
           }
@@ -206,12 +212,13 @@ export class Cog implements ICogServiceServer {
     const response: RunStepResponse = await this.dispatchStep(step, browser, call.request, call.metadata);
     // End the browser session if there is one.
     try {
+      console.log('Finished running step - ending session');
       await new Promise(resolve => setTimeout(resolve, 300));
       await browser.quit();
       console.log('>>>>> BROWSER SESSION ENDED');
     } catch (e) {
       if (e instanceof NoSuchSessionError) {
-        // Do nothing
+        console.log('Session not found: ', e);
       } else {
         console.log('Error closing browser: ', e);
       }

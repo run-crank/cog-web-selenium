@@ -24,12 +24,16 @@ export class SeleniumScrollTo extends BaseStep implements StepInterface {
       return this.error('Invalid units. Please use either % or px.', [], []);
     }
 
+    console.time('scrollTime');
+    console.log(`Scrolling to depth: ${depth}${units}`);
     try {
       await this.client.scrollTo(depth, units);
+      console.timeEnd('scrollTime');
       const screenshot = await this.client.client.takeScreenshot();
       const binaryRecord = this.binary('screenshot', 'Screenshot', 'image/png', screenshot);
       return this.pass('Successfully scrolled to %s%s of the page', [depth, units], [binaryRecord]);
     } catch (e) {
+      console.timeEnd('scrollTime');
       const screenshot = await this.client.client.takeScreenshot();
       const binaryRecord = this.binary('screenshot', 'Screenshot', 'image/png', screenshot);
       return this.error(

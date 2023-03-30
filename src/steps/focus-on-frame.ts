@@ -29,14 +29,18 @@ export class SeleniumFocusOnFrame extends BaseStep implements StepInterface {
       return this.error('Unsupported selection strategy. Please use css, xpath, or partialLinkText', [], []);
     }
 
+    console.time('focusFrameTime');
+    console.log('Focusing on iframe: ', iframeSelector);
     try {
       await this.client.focusFrame(iframeSelector, selectBy);
+      console.timeEnd('focusFrameTime');
       const screenshot = await this.client.client.takeScreenshot();
       const binaryRecord = this.binary('screenshot', 'Screenshot', 'image/png', screenshot);
       const record = this.createRecord(iframeSelector);
       const orderedRecord = this.createOrderedRecord(iframeSelector, stepData['__stepOrder']);
       return this.pass('Successfully focused on frame %s', [iframeSelector], [binaryRecord, record, orderedRecord]);
     } catch (e) {
+      console.timeEnd('focusFrameTime');
       const screenshot = await this.client.client.takeScreenshot();
       const binaryRecord = this.binary('screenshot', 'Screenshot', 'image/png', screenshot);
       return this.error(

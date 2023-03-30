@@ -41,8 +41,11 @@ export class SeleniumCheckNetworkRequestStep extends BaseStep implements StepInt
       //// This will ensure that NavigateTo was called
       await this.client.client.getCurrentUrl();
 
+      console.time('networkRequestTime');
+      console.log('Evaluating network requests');
       const matchingRequests = await this.client.getNetworkRequests(baseUrl, pathContains);
       const evaluatedRequests = this.client.evaluateRequests(matchingRequests, withParameters);
+      console.timeEnd('networkRequestTime');
 
       const records = [];
       if (evaluatedRequests.length !== reqCount) {

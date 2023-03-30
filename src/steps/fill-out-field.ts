@@ -50,10 +50,14 @@ export class SeleniumEnterValueIntoField extends BaseStep implements StepInterfa
     }
 
     // Determine how to fill out the field, and then try.
+    console.time('fillOutTime');
+    console.log(`Fill out field ${selector} with value: ${value}`);
     try {
       await this.client.fillOutField(selector, value, selectBy);
+      console.timeEnd('fillOutTime');
       return this.pass('Successfully filled out %s with %s', [selector, value], []);
     } catch (e) {
+      console.timeEnd('fillOutTime');
       return this.error('There was a problem filling out %s with %s: %s', [selector, value, e.toString()], []);
     }
   }

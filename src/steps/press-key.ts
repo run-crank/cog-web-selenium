@@ -18,12 +18,16 @@ export class SeleniumPressKey extends BaseStep implements StepInterface {
     const stepData: any = step.getData().toJavaScript();
     const key: string = stepData.key;
 
+    console.time('pressKeyTime');
+    console.log('Pressing key: ', key);
     try {
       await this.client.pressKey(key);
+      console.timeEnd('pressKeyTime');
       const screenshot = await this.client.client.takeScreenshot();
       const binaryRecord = this.binary('screenshot', 'Screenshot', 'image/png', screenshot);
       return this.pass('Successfully pressed key: %s', [key], [binaryRecord]);
     } catch (e) {
+      console.timeEnd('pressKeyTime');
       const screenshot = await this.client.client.takeScreenshot();
       const binaryRecord = this.binary('screenshot', 'Screenshot', 'image/png', screenshot);
       return this.error(
