@@ -46,10 +46,14 @@ export class SeleniumClickOnElement extends BaseStep implements StepInterface {
       partialLinkText: 'Link Text',
     };
 
+    console.time('clickTime');
+    console.log('Clicking on selector: ', selector);
     try {
       await this.client.clickElement(selector, selectBy);
+      console.timeEnd('clickTime');
       return this.pass('Successfully clicked element using %s: %s', [selectorMap[selectBy], selector], []);
     } catch (e) {
+      console.timeEnd('clickTime');
       return this.error(
         'There was a problem clicking element %s: %s', [selector, e.toString()], []);
     }
