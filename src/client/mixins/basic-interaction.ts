@@ -512,14 +512,16 @@ export class BasicInteractionAware {
     console.time('gettingOptions');
     const options = await webElement.findElements(By.css('option'));
     console.timeEnd('gettingOptions');
-    // Evaluate all of the options in parallel to find the desired option.
+    // Evaluate all of the options to find the desired option.
     console.time('evaluatingOptions');
-    await Promise.all(options.map(async (option) => {
-      const text = await option.getText();
+    for (let i = 0; i < options.length; i = i + 1) {
+      const text = await options[i].getText();
       if (value === text) {
-        desiredOption = option;
+        console.log('Found Option: ', text);
+        desiredOption = options[i];
+        break;
       }
-    }));
+    }
     console.timeEnd('evaluatingOptions');
 
     if (desiredOption) {
