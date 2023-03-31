@@ -52,14 +52,18 @@ export class BasicInteractionAware {
     let webElement;
     let fieldMethod;
     try {
+      console.time('findingSelector');
       await this.client.wait(until.elementLocated(By[selectBy](selector)), 10000);
       webElement = await this.client.findElement(By[selectBy](selector));
+      console.timeEnd('findingSelector');
     } catch (e) {
       throw Error(`Could not find field with selector: ${selector} - Error: ${e}`);
     }
 
     try {
+      console.time('fieldMethod');
       fieldMethod = await this.getFieldMethod(webElement);
+      console.timeEnd('fieldMethod');
     } catch (e) {
       throw Error(`Unable to fill out field: ${e}`);
     }
@@ -67,7 +71,9 @@ export class BasicInteractionAware {
     switch (fieldMethod) {
       case 'choose':
         try {
+          console.time('selectOption');
           await this.selectOption(webElement, value);
+          console.timeEnd('selectOption');
         } catch (e) {
           throw Error("Drop down may not be visible or isn't selectable.");
         }
@@ -479,8 +485,12 @@ export class BasicInteractionAware {
    */
   private async getFieldMethod(webElement: WebElement) {
     let method: string;
+    console.time('getTagName');
     const tagName = await webElement.getTagName();
+    console.timeEnd('getTagName');
+    console.time('getTypeAttribute');
     const type = await webElement.getAttribute('type');
+    console.timeEnd('getTypeAttribute');
 
     if (tagName === 'select') {
       method = 'choose';
@@ -495,19 +505,30 @@ export class BasicInteractionAware {
   private async selectOption(webElement, value) {
     let desiredOption;
     // Click to open up dropdown
+    console.time('clickingMenu');
     await webElement.click();
+    console.timeEnd('clickingMenu');
 
+    console.time('gettingOptions');
     const options = await webElement.findElements(By.css('option'));
+    console.timeEnd('gettingOptions');
     // Evaluate all of the options in parallel to find the desired option.
+    console.time('evaluatingOptions');
     await Promise.all(options.map(async (option) => {
       const text = await option.getText();
       if (value === text) {
         desiredOption = option;
       }
     }));
+    console.timeEnd('evaluatingOptions');
 
     if (desiredOption) {
+      console.log('DESIRED OPTION FOUND');
+      console.time('clickingOption');
       await desiredOption.click();
+      console.timeEnd('clickingOption');
+    } else {
+      console.log('ERROR - DESIRED OPTION NOT FOUND');
     }
   }
 }
