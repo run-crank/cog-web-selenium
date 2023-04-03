@@ -52,18 +52,14 @@ export class BasicInteractionAware {
     let webElement;
     let fieldMethod;
     try {
-      console.time('findingSelector');
-      await this.client.wait(until.elementLocated(By[selectBy](selector)), 10000);
+      await this.client.wait(until.elementLocated(By[selectBy](selector)), 5000);
       webElement = await this.client.findElement(By[selectBy](selector));
-      console.timeEnd('findingSelector');
     } catch (e) {
       throw Error(`Could not find field with selector: ${selector} - Error: ${e}`);
     }
 
     try {
-      console.time('fieldMethod');
       fieldMethod = await this.getFieldMethod(webElement);
-      console.timeEnd('fieldMethod');
     } catch (e) {
       throw Error(`Unable to fill out field: ${e}`);
     }
@@ -71,9 +67,7 @@ export class BasicInteractionAware {
     switch (fieldMethod) {
       case 'choose':
         try {
-          console.time('selectOption');
           await this.selectOption(webElement, value);
-          console.timeEnd('selectOption');
         } catch (e) {
           throw Error("Drop down may not be visible or isn't selectable.");
         }
@@ -104,8 +98,10 @@ export class BasicInteractionAware {
 
   public async clickElement(selector: string, selectBy: string = 'css') {
     try {
-      await this.client.wait(until.elementLocated(By[selectBy](selector)), 10000);
-      return await this.client.findElement(By[selectBy](selector)).click();
+      await this.client.wait(until.elementLocated(By[selectBy](selector)), 5000);
+      const webElement =  await this.client.findElement(By[selectBy](selector));
+      await this.client.wait(until.elementIsEnabled(webElement), 1000);
+      await webElement.click();
     } catch (e) {
       throw Error(`Element may not be visible or clickable: ${e}`);
     }
@@ -117,14 +113,15 @@ export class BasicInteractionAware {
     } else if (domQuerySelector.startsWith('index=')) {
       const index = domQuerySelector.slice(6);
       try {
+        await this.client.wait(until.ableToSwitchToFrame(Number(index)), 5000);
         await this.client.switchTo().frame(Number(index));
       } catch (e) {
         throw Error(`Could not find frame with index: ${index} - Error: ${e}`);
       }
     } else {
       try {
-        await this.client.wait(until.elementLocated(By[selectBy](domQuerySelector)), 10000);
-        await this.client.switchTo().frame(this.client.findElement(By[selectBy](domQuerySelector)));
+        await this.client.wait(until.elementLocated(By[selectBy](domQuerySelector)), 5000);
+        await this.client.switchTo().frame(await this.client.findElement(By[selectBy](domQuerySelector)));
       } catch (e) {
         throw Error(`Could not find frame with selector: ${domQuerySelector} - Error: ${e}`);
       }
@@ -485,12 +482,8 @@ export class BasicInteractionAware {
    */
   private async getFieldMethod(webElement: WebElement) {
     let method: string;
-    console.time('getTagName');
     const tagName = await webElement.getTagName();
-    console.timeEnd('getTagName');
-    console.time('getTypeAttribute');
     const type = await webElement.getAttribute('type');
-    console.timeEnd('getTypeAttribute');
 
     if (tagName === 'select') {
       method = 'choose';
@@ -505,13 +498,9 @@ export class BasicInteractionAware {
   private async selectOption(webElement, value) {
     let desiredOption;
     // Click to open up dropdown
-    console.time('clickingMenu');
     await webElement.click();
-    console.timeEnd('clickingMenu');
 
-    console.time('gettingOptions');
     const options = await webElement.findElements(By.css('option'));
-    console.timeEnd('gettingOptions');
     // Evaluate all of the options to find the desired option.
     console.time('evaluatingOptions');
     for (let i = 0; i < options.length; i = i + 1) {
@@ -526,9 +515,7 @@ export class BasicInteractionAware {
 
     if (desiredOption) {
       console.log('DESIRED OPTION FOUND');
-      console.time('clickingOption');
       await desiredOption.click();
-      console.timeEnd('clickingOption');
     } else {
       console.log('ERROR - DESIRED OPTION NOT FOUND');
     }
